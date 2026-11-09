@@ -1,5 +1,6 @@
 """GUI-independent patch and layout engine; coordinates use bottom-left mm."""
-from .templates import template_names, template_values, validate_template
+from color_patch_maker.engine.messages import EngineError, Message
+from .templates import template_names, template_values, validate_template, template_label, template_id, reserved_template_names
 
 import math
 import re
@@ -19,16 +20,18 @@ def capacity(available, cell):
 
 def integer(value, name, minimum=0, maximum=None):
     if isinstance(value, bool) or not re.fullmatch(r'[+-]?[0-9]+', str(value)):
-        raise ValueError(f'{name}: 인쇄기는 정수값만 출력합니다. 정수를 입력하세요.')
+        raise EngineError('input.integer', target=name, value=value, name=name)
     result = int(value)
     if result < minimum or (maximum is not None and result > maximum):
-        raise ValueError(f'{name}: {minimum} 이상' + (f' {maximum} 이하' if maximum is not None else '') + '로 입력하세요.')
+        if maximum is None:
+            raise EngineError('input.minimum', target=name, value=value, name=name, minimum=minimum)
+        raise EngineError('input.range', target=name, value=value, name=name, minimum=minimum, maximum=maximum)
     return result
 
 
 def color(values):
     if len(values) != 4:
-        raise ValueError('CMYK: 네 값을 입력하세요.')
+        raise EngineError('input.color_count', target='cmyk', value=values)
     return [integer(v, k, 0, 100) for k, v in zip('CMYK', values)]
 
 
@@ -36,9 +39,9 @@ def number(value, name, minimum=0):
     try:
         value = float(value)
     except (TypeError, ValueError):
-        raise ValueError(f"{name}: 숫자로 된 {minimum} 이상의 mm 값을 입력하세요.") from None
+        raise EngineError('input.number', target=name, value=value, name=name, minimum=minimum) from None
     if not math.isfinite(value) or value < minimum:
-        raise ValueError(f'{name}: 유한한 {minimum} 이상의 mm 값을 입력하세요.')
+        raise EngineError('input.finite', target=name, value=value, name=name, minimum=minimum)
     return value
 
 
@@ -50,21 +53,21 @@ def layout(mode, *, cmyk=None, start=None, end=None, channels='CM', step=1,
            cols=None, rows=7, count=None, paper=(305, 505), margin=20, gap=3,
            patch_size=None):
     if mode not in ('grid', 'ramp'):
-        raise ValueError('방식은 grid 또는 ramp여야 합니다.')
+        raise EngineError('input.mode', target='mode', value=mode)
     paper = [number(v, 'paper') for v in paper]
     if len(paper) != 2:
-        raise ValueError('paper: 폭과 높이를 입력하세요.')
+        raise EngineError('input.paper_count', target='paper', value=paper)
     margin, gap = number(margin, 'margin'), number(gap, 'gap')
     width, height = paper[0] - 2 * margin, paper[1] - 2 * margin
     size = None if patch_size is None else number(patch_size, 'patch-size', 5)
     if width <= 0 or height <= 6:
-        raise ValueError('paper/margin: 패치 공간이 없습니다. 용지를 키우거나 여백을 줄이세요.')
+        raise EngineError('layout.paper_space', target='paper/margin', value=dict(paper=paper, margin=margin))
     settings = dict(mode=mode, paper=paper, margin=margin, gap=gap, patch_size=size)
     patches = []
     if mode == 'grid':
         cmyk = color(cmyk)
         if channels not in ('CM', 'CY', 'CK', 'MY', 'MK', 'YK'):
-            raise ValueError('channels: CM, CY, CK, MY, MK, YK 중 선택하세요.')
+            raise EngineError('input.channels', target='channels', value=channels)
         step = integer(step, 'step', 1)
         cols, rows = integer(cols if cols is not None else 7, 'cols', 1), integer(rows, 'rows', 1)
         for r in range(rows):
@@ -80,7 +83,7 @@ def layout(mode, *, cmyk=None, start=None, end=None, channels='CM', step=1,
     else:
         start, end = color(start), color(end)
         if start == end:
-            raise ValueError('from/to: 서로 다른 시작·끝 값을 입력하세요.')
+            raise EngineError('input.identical_endpoints', target='from/to', value=dict(start=start, end=end))
         count = integer(count, 'count', 2)
         auto_cols = 7 if size is None else capacity(width + gap, size + gap)
         cols = integer(auto_cols if cols in (None, 'auto') else cols, 'cols', 1)
@@ -94,13 +97,13 @@ def layout(mode, *, cmyk=None, start=None, end=None, channels='CM', step=1,
     if automatic:
         size = min((width - (cols-1)*gap)/cols, (height - (rows-1)*gap)/rows - 6)
         if size < 5:
-            raise ValueError('patch-size: 자동 크기가 5mm 미만입니다. 패치 크기를 지정하세요.')
+            raise EngineError('layout.auto_small', target='patch_size', value=size)
     capacity_x = cols if automatic else capacity(width + gap, size + gap)
     capacity_y = rows if automatic else capacity(height + gap, size + 6 + gap)
     if min(capacity_x, capacity_y) < 1:
-        raise ValueError('patch-size: 패치가 용지에 들어가지 않습니다. 크기를 줄이세요.')
+        raise EngineError('layout.patch_fit', target='patch_size', value=size)
     if mode == 'ramp' and cols > capacity_x:
-        raise ValueError(f'cols: 최대 {capacity_x}칸으로 줄이세요.')
+        raise EngineError('layout.columns', target='cols', value=cols, maximum=capacity_x)
     pages = []
     for top in range(0, rows, capacity_y):
         for left in range(0, cols, capacity_x):
@@ -115,12 +118,12 @@ def layout(mode, *, cmyk=None, start=None, end=None, channels='CM', step=1,
                     p['label'] = patch_label(p)
                     font_size = min(7, 7*size*mm/stringWidth(p['label'], LABEL_FONT, 7))
                     if font_size < MIN_LABEL_PT:
-                        raise ValueError(f'라벨: 최소 {MIN_LABEL_PT}pt를 확보할 수 없습니다. 패치 크기를 키우거나 칸 수를 줄이세요.')
+                        raise EngineError('layout.label_size', target='patch_size', value=size, minimum=MIN_LABEL_PT)
                     p['label_font_pt'] = font_size
                     page.append(p)
             pages.append(dict(patches=page, number=len(pages)+1))
     return dict(settings=settings, stem=stem, paper_mm=paper, pages=pages,
-                warnings=[f'{sum(p.get("clamped", False) for p in patches)}개 패치 0/100 고정'] if any(p.get('clamped') for p in patches) else [])
+                warnings=[Message("warning.clamped", count=sum(p.get("clamped", False) for p in patches))] if any(p.get('clamped') for p in patches) else [])
 
 
 def input_errors(mode, **values):
@@ -134,7 +137,8 @@ def input_errors(mode, **values):
         try:
             validator(*args)
         except ValueError as exc:
-            errors[key] = str(exc)
+            exc.target = key
+            errors[key] = exc
     for key in (('cmyk',) if mode == 'grid' else ('start', 'end')):
         for i, value in enumerate(values[key]):
             check(f'{key}.{i}', integer, value, 'CMYK'[i], 0, 100)

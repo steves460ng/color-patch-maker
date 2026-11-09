@@ -1,4 +1,5 @@
 """Aspect-preserving engine layout preview and patch hit testing."""
+from color_patch_maker.engine.messages import t
 from PySide6.QtCore import QRectF, Qt, Signal
 from PySide6.QtGui import QColor, QPainter, QPen, QFont
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
@@ -17,7 +18,7 @@ class PaperPlaceholder(QWidget):
         super().__init__()
         self.setObjectName('paper_placeholder')
         self.setMinimumSize(100, 100)
-        self.setAccessibleName('미리보기 용지')
+        self.setAccessibleName(t('preview.paper'))
         self.document = None
         self.page_index = 0
         self.selected_id = None
@@ -60,7 +61,7 @@ class PaperPlaceholder(QWidget):
         painter.setPen(QColor('#626c77'))
         if not self.document:
             painter.drawText(rect.adjusted(16,16,-16,-16), Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap,
-                             '입력값을 확인하세요')
+                             t('preview.invalid'))
             return
         scale = rect.width()/self.document['paper_mm'][0]
         for patch in self.patches:
@@ -92,11 +93,11 @@ class Preview(QWidget):
         box.addWidget(self.paper, 1)
         pager = QHBoxLayout()
         pager.addStretch()
-        pager.addWidget(button('이전', 'previous_page_button'))
-        pager.addWidget(label('장 1 / 1', 'page_indicator'))
-        pager.addWidget(button('다음', 'next_page_button'))
+        pager.addWidget(button(t('preview.previous'), 'previous_page_button'))
+        pager.addWidget(label(t('preview.page', current=1, total=1), 'page_indicator'))
+        pager.addWidget(button(t('preview.next'), 'next_page_button'))
         pager.addStretch()
         box.addLayout(pager)
-        note = label('화면 색은 인쇄색과 다를 수 있습니다', 'screen_color_note')
+        note = label(t('preview.color_note'), 'screen_color_note')
         note.setAlignment(Qt.AlignmentFlag.AlignCenter)
         box.addWidget(note)

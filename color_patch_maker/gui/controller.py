@@ -1,4 +1,5 @@
 """Translate widget values to engine arguments and display engine results."""
+from color_patch_maker.engine.messages import t, Message
 from PySide6.QtCore import QSignalBlocker
 from PySide6.QtWidgets import QWidget, QLineEdit
 from color_patch_maker.engine import input_errors, layout, output_names
@@ -69,10 +70,10 @@ class Controller:
         for key, message in errors.items():
             field = self.widget(mapping[key])
             field.setStyleSheet('border: 1px solid #b3261e;')
-            compact = '0~100 정수' if key.startswith(('cmyk.', 'start.', 'end.')) else message
+            compact = t('input.color_compact') if key.startswith(('cmyk.', 'start.', 'end.')) else message.render()
             self.widget(mapping[key]+'_error').setText(compact)
-            self.widget(mapping[key]+'_error').setToolTip(message)
-        problem = '입력값을 확인하세요' if errors else None
+            self.widget(mapping[key]+'_error').setToolTip(message.render())
+        problem = t('preview.invalid') if errors else None
         if not errors:
             try:
                 self.document = layout(mode, **args)
@@ -90,21 +91,21 @@ class Controller:
             self.widget('summary_patch_size').setText(f"{patches[0]['rect_mm'][2]:.1f}")
             settings = d['settings']
             paper = '×'.join(f'{v:g}' for v in d['paper_mm'])
-            size = '자동' if settings['patch_size'] is None else f"{settings['patch_size']:g}mm"
-            self.widget('layout_summary').setText(f"{paper} · 여백 {settings['margin']:g} · {size}")
-            self.widget('paper_info').setText(f'{paper}mm · DeviceCMYK')
+            size = t('layout.auto') if settings['patch_size'] is None else t('layout.size_mm', size=settings['patch_size'])
+            self.widget('layout_summary').setText(t('layout.summary', paper=paper, margin=settings['margin'], size=size))
+            self.widget('paper_info').setText(t('layout.paper_info', paper=paper))
             names = output_names(d)
-            self.widget('filename_preview').setText(names[0] if len(names)==1 else f'{names[0]} … {names[-1]}')
+            self.widget('filename_preview').setText(names[0] if len(names)==1 else t('output.filename_range', first=names[0], last=names[-1]))
             notices = list(d['warnings'])
             if len(d['pages']) > 1:
-                notices.append(f"한 장에 다 들어가지 않아 단일 페이지 PDF {len(d['pages'])}개로 나눕니다")
-            self.widget('warning_list').setText('\n'.join(notices) or '없음')
+                notices.append(Message('warning.split', count=len(d['pages'])))
+            self.widget('warning_list').setText('\n'.join(notice.render() for notice in notices) or t('notice.none'))
         layout_keys = ('paper.', 'margin', 'gap', 'patch_size')
         if not any(key.startswith(layout_keys) for key in errors):
             paper = '×'.join(f'{float(v):g}' for v in args['paper'])
-            size = '자동' if args['patch_size'] is None else f"{float(args['patch_size']):g}mm"
-            self.widget('layout_summary').setText(f"{paper} · 여백 {float(args['margin']):g} · {size}")
-            self.widget('paper_info').setText(f'{paper}mm · DeviceCMYK')
+            size = t('layout.auto') if args['patch_size'] is None else t('layout.size_mm', size=float(args['patch_size']))
+            self.widget('layout_summary').setText(t('layout.summary', paper=paper, margin=float(args['margin']), size=size))
+            self.widget('paper_info').setText(t('layout.paper_info', paper=paper))
         else:
             self.widget('layout_summary').setText('–')
             self.widget('paper_info').setText('–')
@@ -119,7 +120,7 @@ class Controller:
     def show_page(self):
         count = len(self.document['pages']) if self.document else 0
         self.window.preview.paper.set_document(self.document, self.page_index)
-        self.widget('page_indicator').setText(f'장 {self.page_index+1} / {count}' if count else '장 – / –')
+        self.widget('page_indicator').setText(t('preview.page', current=self.page_index+1, total=count) if count else t('preview.page_empty'))
         self.widget('previous_page_button').setEnabled(bool(count and self.page_index > 0))
         self.widget('next_page_button').setEnabled(bool(count and self.page_index < count-1))
 
@@ -139,7 +140,7 @@ class Controller:
         self.widget('selected_cmyk').setText(' '.join(f'{c}{v}' for c,v in zip('CMYK',patch['cmyk'])) if patch else '–')
         color = screen_color(patch['cmyk']).name() if patch else '#e5e7eb'
         self.widget('selected_swatch').setStyleSheet(f'background: {color}; border: 1px solid #c5cbd2;')
-        self.widget('selection_hint').setText('선택한 값을 입력에 적용할 수 있습니다.' if patch else '미리보기에서 패치를 선택하세요.')
+        self.widget('selection_hint').setText(t('selection.ready') if patch else t('selection.empty'))
         for name in ['use_as_base_button','use_as_start_button','use_as_end_button']:
             self.widget(name).setEnabled(patch is not None)
 

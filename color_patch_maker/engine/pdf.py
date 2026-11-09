@@ -1,4 +1,5 @@
 """Write exclusive output bundles and verify our restricted PDF drawing format."""
+from color_patch_maker.engine.messages import EngineError
 import json
 from pathlib import Path
 
@@ -15,16 +16,16 @@ def verify(pdf_path, manifest_path):
     manifest = json.loads(Path(manifest_path).read_text(encoding='utf-8'))
     version = manifest.get('schema_version')
     if type(version) is not int or version not in (1, MANIFEST_SCHEMA_VERSION):
-        raise ValueError('지원하지 않는 매니페스트 버전입니다.')
+        raise EngineError('pdf.schema', target='schema_version', value=version)
     with pikepdf.open(pdf_path) as pdf:
         if len(pdf.pages) != 1:
-            raise ValueError('PDF는 정확히 한 페이지여야 합니다.')
+            raise EngineError('pdf.page_count', target='pdf.pages', value=len(pdf.pages))
         page = pdf.pages[0]
         expected_box = [0, 0, *(v*mm for v in manifest['paper_mm'])]
         if any(abs(float(a)-b) > .001 for a, b in zip(page.MediaBox, expected_box)):
-            raise ValueError('PDF 용지 치수가 다릅니다.')
+            raise EngineError('pdf.paper', target='pdf.MediaBox', value=[float(v) for v in page.MediaBox])
         if page.get('/Rotate', 0) != 0 or page.get('/UserUnit', 1) != 1:
-            raise ValueError('PDF 좌표계가 변경되었습니다.')
+            raise EngineError('pdf.coordinate_system', target='pdf.coordinates', value=dict(rotate=page.get('/Rotate', 0), unit=page.get('/UserUnit', 1)))
         rects, labels, text_states = [], [], []
         font_name, font_size, text_matrix = None, None, None
         fill, pending = None, None
@@ -33,16 +34,16 @@ def verify(pdf_path, manifest_path):
         for operands, operator in pikepdf.parse_content_stream(page):
             op = str(operator)
             if op not in allowed:
-                raise ValueError(f'지원하지 않는 PDF 그리기 연산: {op}')
+                raise EngineError('pdf.operator', target='pdf', op=op, value=op)
             if op == 'cm' and [float(x) for x in operands] != [1, 0, 0, 1, 0, 0]:
-                raise ValueError('PDF 좌표 변환이 변경되었습니다.')
+                raise EngineError('pdf.transform', target='pdf.cm', value=[float(v) for v in operands])
             if op == 'k':
                 fill = [float(v)*100 for v in operands]
             elif op == 're':
                 pending = [float(v)/mm for v in operands]
             elif op in ('f', 'f*'):
                 if pending is None or fill is None:
-                    raise ValueError('DeviceCMYK 사각형이 아닙니다.')
+                    raise EngineError('pdf.device_cmyk', target='pdf.rectangle', value=dict(fill=fill, rect=pending))
                 rects.append((fill, pending))
                 pending = None
             elif op == 'Tf':
@@ -63,7 +64,7 @@ def verify(pdf_path, manifest_path):
         if version == MANIFEST_SCHEMA_VERSION:
             expected_labels = [patch_label(p) for p in manifest['patches']]
             if labels != expected_labels or labels != [p['label'] for p in manifest['patches']]:
-                raise ValueError('PDF 라벨 또는 헤더 없는 출력 형식이 다릅니다.')
+                raise EngineError('pdf.label_format', target='pdf.labels', value=labels)
             for (font, size, matrix, ink), patch in zip(text_states, manifest['patches']):
                 x, y, width, _ = patch['rect_mm']
                 expected_size = min(7, 7*width*mm/stringWidth(patch['label'], LABEL_FONT, 7))
@@ -72,23 +73,23 @@ def verify(pdf_path, manifest_path):
                         abs(size-expected_size) > 1e-5 or
                         abs(size-patch['label_font_pt']) > 1e-5 or
                         stringWidth(patch['label'], LABEL_FONT, size) > width*mm+1e-4):
-                    raise ValueError('PDF 라벨 글꼴·크기·폭이 다릅니다.')
+                    raise EngineError('pdf.label_font', target='pdf.label_font', value=dict(font=font, size=size))
                 expected_matrix = [1, 0, 0, 1, x*mm, (y-3)*mm]
                 if (matrix is None or len(matrix) != 6 or
                         any(abs(a-b) > .001 for a,b in zip(matrix, expected_matrix)) or
                         ink != [0, 0, 0, 100]):
-                    raise ValueError('PDF 라벨 위치·색이 다릅니다.')
+                    raise EngineError('pdf.label_position', target='pdf.label_position', value=dict(matrix=matrix, ink=ink))
         if len(rects) != len(manifest['patches']):
-            raise ValueError('PDF 패치 개수가 다릅니다.')
+            raise EngineError('pdf.patch_count', target='pdf.patches', value=len(rects))
         for (values, rect), patch in zip(rects, manifest['patches']):
             if any(type(v) is not int or not 0 <= v <= 100 for v in patch['cmyk']):
-                raise ValueError('매니페스트 CMYK가 정수가 아닙니다.')
+                raise EngineError('pdf.manifest_color', target='manifest.cmyk', value=patch['cmyk'])
             if len(values) != 4 or any(abs(a-b) > .0001 for a, b in zip(values, patch['cmyk'])):
-                raise ValueError('PDF CMYK 저장값이 다릅니다.')
+                raise EngineError('pdf.color', target='pdf.cmyk', value=values)
             if any(abs(a-b) > .001 for a, b in zip(rect, patch['rect_mm'])):
-                raise ValueError('PDF 패치 좌표가 다릅니다.')
+                raise EngineError('pdf.patch_position', target='pdf.rect_mm', value=rect)
             if patch['label'] not in labels:
-                raise ValueError('PDF 라벨이 다릅니다.')
+                raise EngineError('pdf.label', target='pdf.label', value=patch['label'])
     return True
 
 

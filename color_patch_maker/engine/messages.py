@@ -1,0 +1,163 @@
+"""Korean message catalog shared by engine, GUI and CLI (no Qt dependency)."""
+from dataclasses import dataclass
+from string import Formatter
+
+KO = {
+    'app.title': 'Color Patch Maker',
+    'cli.error': '오류: {error}',
+    'cli.template_help': '기본, 카드 (별칭: default, card)',
+    'grid.base': '기준 CMYK (%)',
+    'grid.channels': '변형 채널',
+    'grid.rows': '세로 칸 수',
+    'grid.step': '간격 (%p)',
+    'grid.title': '격자 설정',
+    'input.channels': 'channels: CM, CY, CK, MY, MK, YK 중 선택하세요.',
+    'input.color_compact': '0~100 정수',
+    'input.color_count': 'CMYK: 네 값을 입력하세요.',
+    'input.finite': '{name}: 유한한 {minimum} 이상의 mm 값을 입력하세요.',
+    'input.identical_endpoints': 'from/to: 서로 다른 시작·끝 값을 입력하세요.',
+    'input.integer': '{name}: 인쇄기는 정수값만 출력합니다. 정수를 입력하세요.',
+    'input.minimum': '{name}: {minimum} 이상로 입력하세요.',
+    'input.mode': '방식은 grid 또는 ramp여야 합니다.',
+    'input.number': '{name}: 숫자로 된 {minimum} 이상의 mm 값을 입력하세요.',
+    'input.paper_count': 'paper: 폭과 높이를 입력하세요.',
+    'input.range': '{name}: {minimum} 이상 {maximum} 이하로 입력하세요.',
+    'layout.auto': '자동',
+    'layout.auto_small': 'patch-size: 자동 크기가 5mm 미만입니다. 패치 크기를 지정하세요.',
+    'layout.columns': 'cols: 최대 {maximum}칸으로 줄이세요.',
+    'layout.columns_label': '가로 칸 수',
+    'layout.gap': '패치 간격 mm',
+    'layout.height': '용지 세로 mm',
+    'layout.label_size': '라벨: 최소 {minimum}pt를 확보할 수 없습니다. 패치 크기를 키우거나 칸 수를 줄이세요.',
+    'layout.margin': '여백 mm (사방)',
+    'layout.named_summary': '{name} · {summary}',
+    'layout.paper_info': '{paper}mm · DeviceCMYK',
+    'layout.paper_space': 'paper/margin: 패치 공간이 없습니다. 용지를 키우거나 여백을 줄이세요.',
+    'layout.patch_fit': 'patch-size: 패치가 용지에 들어가지 않습니다. 크기를 줄이세요.',
+    'layout.patch_size': '패치 크기 mm',
+    'layout.reset': '기본값으로 되돌리기',
+    'layout.size_mm': '{size:g}mm',
+    'layout.summary': '{paper} · 여백 {margin:g} · {size}',
+    'layout.title': '레이아웃',
+    'layout.width': '용지 가로 mm',
+    'mode.grid': '두 채널 격자',
+    'mode.ramp': '시작·끝 보간',
+    'notice.none': '없음',
+    'notice.title': '알림',
+    'output.browse': '찾기',
+    'output.busy': 'PDF 생성 및 역검사 중입니다…',
+    'output.choose_folder': '저장 폴더 선택',
+    'output.close_busy': 'PDF 작업이 끝난 뒤 창을 닫아 주세요.',
+    'output.disk_full': '디스크 공간이 부족합니다. 공간을 확보한 뒤 다시 시도하세요.',
+    'output.failure': 'PDF를 저장하지 못했습니다. 폴더와 저장 장치를 확인하세요: {error}',
+    'output.filename_range': '{first} … {last}',
+    'output.folder': '저장 폴더',
+    'output.folder_invalid': '존재하는 폴더를 선택하세요.',
+    'output.folder_missing': '저장 폴더를 찾을 수 없습니다. 폴더를 다시 선택하세요.',
+    'output.folder_required': '저장 폴더를 선택하세요.',
+    'output.make': 'PDF 만들기',
+    'output.open': '폴더 열기',
+    'output.open_failed': '폴더를 열지 못했습니다. 파일 탐색기에서 저장 폴더를 확인하세요.',
+    'output.permission': '저장 폴더 쓰기 권한이 없습니다. 다른 폴더를 선택하세요.',
+    'output.success': '역검사 통과\n{names}',
+    'output.verify_failure': 'PDF 생성·역검사에 실패했습니다: {error}',
+    'pdf.color': 'PDF CMYK 저장값이 다릅니다.',
+    'pdf.coordinate_system': 'PDF 좌표계가 변경되었습니다.',
+    'pdf.device_cmyk': 'DeviceCMYK 사각형이 아닙니다.',
+    'pdf.label': 'PDF 라벨이 다릅니다.',
+    'pdf.label_font': 'PDF 라벨 글꼴·크기·폭이 다릅니다.',
+    'pdf.label_format': 'PDF 라벨 또는 헤더 없는 출력 형식이 다릅니다.',
+    'pdf.label_position': 'PDF 라벨 위치·색이 다릅니다.',
+    'pdf.manifest_color': '매니페스트 CMYK가 정수가 아닙니다.',
+    'pdf.operator': '지원하지 않는 PDF 그리기 연산: {op}',
+    'pdf.page_count': 'PDF는 정확히 한 페이지여야 합니다.',
+    'pdf.paper': 'PDF 용지 치수가 다릅니다.',
+    'pdf.patch_count': 'PDF 패치 개수가 다릅니다.',
+    'pdf.patch_position': 'PDF 패치 좌표가 다릅니다.',
+    'pdf.schema': '지원하지 않는 매니페스트 버전입니다.',
+    'pdf.transform': 'PDF 좌표 변환이 변경되었습니다.',
+    'preview.color_note': '화면 색은 인쇄색과 다를 수 있습니다',
+    'preview.invalid': '입력값을 확인하세요',
+    'preview.next': '다음',
+    'preview.page': '장 {current} / {total}',
+    'preview.page_empty': '장 – / –',
+    'preview.paper': '미리보기 용지',
+    'preview.previous': '이전',
+    'ramp.auto_hint': '가로 칸 수 auto: 자동 크기면 7칸, 패치 크기를 정하면 한 줄 최대 칸 수',
+    'ramp.count': '패치 수 (시작·끝 포함)',
+    'ramp.end': '끝 CMYK (%)',
+    'ramp.start': '시작 CMYK (%)',
+    'ramp.title': '보간 설정',
+    'selection.base': '이 값을 기준으로',
+    'selection.empty': '미리보기에서 패치를 선택하세요.',
+    'selection.end': '끝으로',
+    'selection.ready': '선택한 값을 입력에 적용할 수 있습니다.',
+    'selection.start': '시작으로',
+    'selection.title': '선택한 패치',
+    'settings.missing_folder': '저장된 폴더가 없어 초기화했습니다. 폴더를 다시 선택하세요.',
+    'summary.count': '패치 수',
+    'summary.pdf_count': 'PDF 수',
+    'template.card': '카드',
+    'template.custom': '사용자 설정',
+    'template.default': '기본',
+    'template.delete': '템플릿 삭제',
+    'template.delete_question': '“{name}” 템플릿을 삭제할까요?',
+    'template.fields': '템플릿: 용지, 여백, 간격, 패치 크기를 모두 입력하세요.',
+    'template.list': '목록',
+    'template.list_error': '템플릿 목록',
+    'template.name': '템플릿 이름',
+    'template.name_invalid': '템플릿 이름을 입력하세요. 앞뒤 공백은 사용할 수 없습니다.',
+    'template.name_reserved': '기본 제공 이름·별칭과 사용자 설정은 이름으로 사용할 수 없습니다.',
+    'template.overwrite': '템플릿 덮어쓰기',
+    'template.overwrite_question': '“{name}” 템플릿을 덮어쓸까요?',
+    'template.paper': '템플릿: 용지 가로·세로 두 값이 필요합니다.',
+    'template.save': '템플릿 저장',
+    'template.skipped': '잘못된 저장 템플릿을 건너뛰었습니다: {names}',
+    'template.unknown': '템플릿: 기본, 카드, default, card 중 선택하세요.',
+    'warning.clamped': '{count}개 패치 0/100 고정',
+    'warning.split': '한 장에 다 들어가지 않아 단일 페이지 PDF {count}개로 나눕니다',
+}
+
+CATALOGS = {'ko': KO}
+
+
+def t(key, language='ko', **values):
+    """Render a complete sentence; unknown languages/keys/arguments fail loudly."""
+    template = CATALOGS[language][key]
+    required = {field for _, field, _, _ in Formatter().parse(template) if field is not None}
+    missing, extra = required - values.keys(), values.keys() - required
+    if missing or extra:
+        raise KeyError(f'{key}: missing={sorted(missing)}, extra={sorted(extra)}')
+    return template.format(**values)
+
+
+@dataclass(init=False)
+class Message:
+    code: str
+    values: dict
+
+    def __init__(self, code, **values):
+        t(code, **values)  # Validate the catalog contract at the producer.
+        self.code = code
+        self.values = values
+
+    def render(self, language='ko'):
+        return t(self.code, language, **self.values)
+
+    def __str__(self):
+        return self.render()
+
+
+class EngineError(ValueError):
+    """Structured engine failure, retaining ValueError and Korean str compatibility."""
+    def __init__(self, code, *, target=None, value=None, **values):
+        self.message = Message(code, **values)
+        self.code, self.target, self.value = code, target, value
+        self.values = self.message.values
+        super().__init__(code)
+
+    def render(self, language='ko'):
+        return self.message.render(language)
+
+    def __str__(self):
+        return self.render()

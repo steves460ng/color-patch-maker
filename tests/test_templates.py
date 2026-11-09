@@ -38,7 +38,7 @@ def unrelated(w):
 
 
 def test_builtin_values_and_copies():
-    assert template_names() == ('기본', '카드')
+    assert template_names() == ('default', 'card')
     assert template_values('기본') == template_values('default') == dict(paper=[305,505],margin=20,gap=3,patch_size=None)
     assert template_values('카드') == template_values('card') == dict(paper=[85.6,54],margin=2,gap=1,patch_size=18)
     value = template_values('card'); value['paper'][0] = 1
@@ -129,7 +129,7 @@ def test_user_roundtrip_overwrite_delete(window,monkeypatch):
     assert json.loads(window.settings.value('layout_templates'))=={}
 
 
-@pytest.mark.parametrize('name', ['기본','카드','default','card','사용자 설정',''])
+@pytest.mark.parametrize('name', ['기본','카드','default','card','사용자 설정','Default','Card','Custom',''])
 def test_reserved_names(window,monkeypatch,name):
     dialog(monkeypatch,name)
     warnings=[]

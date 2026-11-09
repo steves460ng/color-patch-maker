@@ -1,4 +1,5 @@
 """Command-line interface."""
+from color_patch_maker.engine.messages import t
 import argparse
 import json
 import sys
@@ -11,7 +12,7 @@ def main(argv=None):
     commands = parser.add_subparsers(dest='command', required=True)
     for mode in ('grid', 'ramp'):
         p = commands.add_parser(mode)
-        p.add_argument('--template', default='default', help='기본, 카드 (별칭: default, card)')
+        p.add_argument('--template', default='default', help=t('cli.template_help'))
         p.add_argument('--paper', nargs=2)
         p.add_argument('--margin')
         p.add_argument('--gap')
@@ -44,12 +45,12 @@ def main(argv=None):
                     args[key] = value
             document = layout(command, **args)
             for warning in document['warnings']:
-                print(warning, file=sys.stderr)
+                print(warning.render(), file=sys.stderr)
             result = {'files': export(document, out_dir)}
         print(json.dumps(result, ensure_ascii=False))
         return 0
     except Exception as exc:
-        print(f'오류: {exc}', file=sys.stderr)
+        print(t('cli.error', error=exc), file=sys.stderr)
         return 2
 
 

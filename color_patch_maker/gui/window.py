@@ -1,4 +1,5 @@
 """Main window composition and input/preview controller."""
+from color_patch_maker.engine.messages import t
 from pathlib import Path
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon
@@ -20,7 +21,7 @@ class MainWindow(QMainWindow):
     def __init__(self, settings=None):
         super().__init__()
         self.setObjectName('main_window')
-        self.setWindowTitle('Color Patch Maker')
+        self.setWindowTitle(t('app.title'))
         self.setWindowIcon(app_icon())
         self.setMinimumSize(1024, 720)
         self.resize(1200, 800)
@@ -28,7 +29,7 @@ class MainWindow(QMainWindow):
         box = QVBoxLayout(central)
         box.setContentsMargins(12, 12, 12, 12)
         header = QHBoxLayout()
-        header.addWidget(QLabel('Color Patch Maker'))
+        header.addWidget(QLabel(t('app.title')))
         header.addStretch()
         header.addWidget(named(QLabel('–'), 'paper_info'))
         box.addLayout(header)
@@ -57,7 +58,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         if self.controller.output.busy:
-            self.controller.output.status('PDF 작업이 끝난 뒤 창을 닫아 주세요.')
+            self.controller.output.status(t('output.close_busy'))
             event.ignore()
             return
         save(self, self.settings)

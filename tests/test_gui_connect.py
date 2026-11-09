@@ -80,7 +80,7 @@ def test_engine_identity_and_summary(window,mode,changes):
     assert widget(window,'filename_preview').text()==(names[0] if len(names)==1 else f'{names[0]} … {names[-1]}')
     assert widget(window,'paper_info').text()=='305×505mm · DeviceCMYK'
     assert '305×505 · 여백 20' in widget(window,'layout_summary').text()
-    for warning in expected['warnings']: assert warning in widget(window,'warning_list').text()
+    for warning in expected['warnings']: assert warning.render() in widget(window,'warning_list').text()
     if len(names)>1: assert f'PDF {len(names)}개' in widget(window,'warning_list').text()
 
 
