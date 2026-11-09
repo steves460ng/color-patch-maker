@@ -18,10 +18,10 @@ git --version
 ## 2. 저장소 받기·갱신
 
 처음 받거나 이미 받은 폴더를 갱신할 때 다음 명령을 실행합니다. 기존 폴더는 수정 사항이 없는지 확인하세요. 수정 파일이 있으면 아래 코드는 중단합니다.
-PR 검토 중에는 `feat/windows-build`, 병합 후에는 `$BuildRef = 'main'`으로 바꿉니다.
+기본은 `main`입니다. 검토 중인 PR 브랜치를 빌드할 때만 `$BuildRef`를 그 브랜치 이름으로 바꿉니다.
 
 ```powershell
-$BuildRef = 'feat/windows-build'
+$BuildRef = 'main'
 if (-not (Test-Path .\color-patch-maker)) {
     git clone https://github.com/steves460ng/color-patch-maker.git
     if ($LASTEXITCODE -ne 0) { throw '저장소 받기 실패' }
