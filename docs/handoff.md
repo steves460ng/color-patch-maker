@@ -55,7 +55,7 @@
 
 ## 열린 질문과 막힌 점
 
-- **배포본이 오래됨:** README의 Windows 내려받기(Google Drive의 `ColorPatchMaker.zip`, 약 87MB)는 2-4·2-5 이전 빌드다. 템플릿과 헤더 제거가 들어 있지 않다. 새로 빌드해 같은 Drive 파일을 새 버전으로 교체해야 README 설명과 맞는다. ZIP에 `cpm` 폴더가 들어 있는지는 확인하지 못했다(README는 GUI만 들어 있는 것으로 안내).
+- 배포본: README의 Windows 내려받기(Google Drive의 `ColorPatchMaker.zip`)를 같은 파일의 새 버전으로 교체했다(2026-11-09 15:56, 약 87MB, 링크 유지). 사용자 보고 기준 2-5까지 들어간 새 빌드이며, 빌드한 커밋과 그 빌드의 `check_windows.ps1` 결과는 기록되지 않았다. ZIP에 `cpm` 폴더가 들어 있는지도 확인하지 못했다(README는 GUI만 들어 있는 것으로 안내).
 - 4.5pt 라벨 가독성, 기준색·시작·끝 표시 구분, 1mm 간격에서 이웃 라벨이 붙어 보이는지: 인쇄 확인 필요.
 - Python 없는 Windows PC에서의 실행: 미확인.
 - GUI 수동 확인 미완료: 폴더 선택 창, 폴더 열기, 템플릿 이름·덮어쓰기·삭제 대화 상자, 재실행 시 복원, Windows 글꼴에서 알림 영역 가림 여부.
@@ -71,11 +71,11 @@
 
 ## 다음 작업 (순서대로)
 
-1. 사용자가 `main`(`24b717d` 이후)으로 Windows 재빌드·`check_windows.ps1` 실행. 절차는 `docs/BUILD_WINDOWS.md`.
+1. 새 배포본을 만든 빌드의 커밋과 `check_windows.ps1` 결과를 사용자에게 받아 기록한다. 결과가 없으면 `main` 최신으로 다시 확인한다. 절차는 `docs/BUILD_WINDOWS.md`.
 2. 카드 인쇄 시험: `cpm.exe grid --cmyk 100 100 100 100 --template card --cols 4 --rows 2 --out-dir .\print-test`, `cpm.exe ramp --from 40 70 20 0 --to 30 75 30 5 --count 8 --template card --out-dir .\print-test`로 출력해 라벨 가독성 확인. 기본 용지도 함께 확인.
 3. 결과에 따라 라벨 최소 크기 확정 또는 조정(DESIGN.md 3.1 제안 → 확정), 필요하면 라벨 두 줄 방식 검토.
 4. 사용자 확인 결과(빌드, CLI, GUI, Python 없는 PC)를 PROGRESS.md 3장과 `docs/BUILD_WINDOWS.md` 확인 표에 기록(문서 PR).
-5. 새 빌드로 Drive 배포본 교체(같은 파일의 새 버전으로 올리면 README 링크 유지). ZIP 구성에 맞춰 README의 명령줄 안내 조정.
+5. 배포본 ZIP 구성 확인(`cpm` 폴더 포함 여부)과 빌드 커밋 기록. 구성에 맞춰 README의 명령줄 안내 조정. 배포본은 앞으로도 같은 Drive 파일의 새 버전으로 교체해 링크를 유지한다.
 6. 미처리 다듬기를 묶어 코덱스 지시문으로 작성(작은 PR 단위).
 7. 4단계 현장 사이클 진행 후 PROGRESS.md 4장 기록.
 
