@@ -89,7 +89,7 @@ def test_collision_output_and_cli(window,tmp_path,split,mode):
     assert result.returncode==0,result.stderr
     cli_json=[p for p in json.loads(result.stdout)['files'] if p.endswith('.json')]
     gui_json=[p for p in predicted if p.endswith('.json')]
-    assert [json.loads(Path(p).read_text())['patches'] for p in gui_json]==[json.loads(Path(p).read_text())['patches'] for p in cli_json]
+    assert [json.loads(Path(p).read_text(encoding='utf-8'))['patches'] for p in gui_json]==[json.loads(Path(p).read_text(encoding='utf-8'))['patches'] for p in cli_json]
     value(window,'grid_step',2)
     assert not wid(window,'output_status').isVisible() and not wid(window,'open_folder_button').isEnabled()
 
@@ -195,7 +195,7 @@ def test_open_folder(window,tmp_path,monkeypatch):
     value(window,'output_folder',tmp_path);wid(window,'make_pdf_button').click()
     wait_until(lambda:not window.controller.output.busy)
     wid(window,'open_folder_button').click()
-    assert calls==[str(tmp_path)]
+    assert [Path(path) for path in calls]==[tmp_path]
 
 
 @pytest.mark.parametrize('tab',[0,1])

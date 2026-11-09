@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 
@@ -115,13 +116,20 @@ def test_cli_invalid(tmp_path, arguments):
     assert not out.exists()
 
 
-def test_cli_success(tmp_path):
+@pytest.mark.parametrize('encoding', [None, 'cp949'])
+def test_cli_success(tmp_path, encoding):
+    # JSON bytes assume UTF-8; native redirected CLI output follows its locale.
+    # Exercise a Korean output path, including CP949 on non-Windows hosts.
+    tmp_path = tmp_path / '한글 경로'
+    env = os.environ.copy()
+    if encoding:
+        env['PYTHONIOENCODING'] = encoding
     for arguments in [ ['grid','--cmyk','0','100','20','0'], ['ramp','--from','40','70','20','0','--to','30','75','30','5','--count','11'] ]:
-        result = subprocess.run([sys.executable,'-m','color_patch_maker.cli',*arguments,'--out-dir',str(tmp_path)],capture_output=True)
+        result = subprocess.run([sys.executable,'-m','color_patch_maker.cli',*arguments,'--out-dir',str(tmp_path)],capture_output=True,text=True,encoding=encoding,env=env)
         assert result.returncode == 0, result.stderr
         files = json.loads(result.stdout)['files']
         assert bool(result.stderr) == (arguments[0] == 'grid')
-        checked = subprocess.run([sys.executable,'-m','color_patch_maker.cli','verify',*files],capture_output=True)
+        checked = subprocess.run([sys.executable,'-m','color_patch_maker.cli','verify',*files],capture_output=True,text=True,encoding=encoding,env=env)
         assert checked.returncode == 0 and json.loads(checked.stdout)['verified']
 
 

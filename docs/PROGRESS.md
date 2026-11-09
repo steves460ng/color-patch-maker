@@ -82,6 +82,7 @@ GUI는 2-1 배치, 2-2 연결, 2-3 출력의 세 PR로 나눠 진행합니다(�
 | 2026-11-09 | GUI 2-2 엔진 연결 | Linux offscreen 전체 379개 통과, 상태별 캡처 12장 | GUI 2-3 출력 연결 |
 | 2026-11-09 | GUI 2-3 출력·설정 및 화면 다듬기 | Linux offscreen 리뷰 반영 후 전체 414개 통과, 캡처 18장 갱신 | Windows 수동 확인·3단계 배포 |
 | 2026-11-09 | Windows 배포 준비: 두 spec·빌드/확인 스크립트·안내 | Linux 두 빌드 및 CLI 4 PDF 역검사·GUI offscreen 종료 통과, 전체 414개 통과. PowerShell/Windows 미실행 | 사용자 Windows 빌드 및 Python 없는 PC 확인 |
+| 2026-11-09 | Windows 빌드 테스트 호환성 수정 | 사용자 Windows 검사 3 실패·411 통과 원인 수정. Linux 전체 415 통과(CP949·한글 경로 포함) | Windows 빌드 재실행 |
 
 ### 1단계 검증 범위와 한계
 
@@ -176,3 +177,11 @@ GUI는 2-1 배치, 2-2 연결, 2-3 출력의 세 PR로 나눠 진행합니다(�
 - `.venv/bin/python -m PyInstaller --noconfirm --clean cpm.spec` 및 `ColorPatchMaker.spec` 모두 성공. 빌드한 CLI로 grid 1장, ramp 1장, 50mm 지정 분할 2장(총 4 PDF)을 출력하고 각 PDF/JSON verify 통과. 소수 40.5/40.0은 종료 코드 2와 파일 미생성 확인.
 - 빌드한 GUI는 `QT_QPA_PLATFORM=offscreen CPM_OFFSCREEN_SMOKE_SETTINGS=<임시폴더>`로 실행해 창을 표시하고 500ms 후 정상 종료(코드 0). 이 환경 변수 조합은 빌드 진단용이며 임시 QSettings를 사용한다. Fontconfig의 쓰기 가능한 캐시 디렉터리 경고가 있었지만 종료 및 테스트는 통과했다.
 - PowerShell 실행기(pwsh/powershell)가 없어 문법 파서 검사와 스크립트 실행은 건너뛰었다. 코드는 정적 검토만 했다. Windows 빌드, qwindows.dll 로드, 콘솔 창 유무, 실제 폴더 대화상자/탐색기, Windows 글꼴·배율, Python 없는 Windows PC 실행은 모두 미확인이다. 사용자 확인 표를 받은 뒤 결과를 갱신한다.
+
+
+### Windows 사용자 검사 후속
+
+- 사용자 Windows Python 3.12 실행에서 전체 테스트 단계가 3 실패·411 통과로 중단됐다. Windows 빌드 및 실행 성공은 아직 확인되지 않았다.
+- CLI 성공 테스트는 로컬 인코딩 출력을 바이트 JSON으로 직접 해석하던 UTF-8 가정을 제거하고 텍스트로 디코딩한다. 기본 인코딩 및 강제 CP949에서 한글 경로의 격자·보간 출력과 역검사를 검사한다.
+- 소스·매니페스트 읽기는 저장 형식인 UTF-8을 명시했다. 폴더 열기 테스트는 QUrl의 슬래시 경로와 Windows 역슬래시 경로를 Path로 비교한다. 데이터·경고·역검사·경로 일치 검사는 유지한다. 앱 동작 및 빌드 스크립트 변경은 없다.
+- Linux / Python 3.12.14: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` 415개 통과, 실패·건너뜀 없음. `git diff --check` 통과. Windows에서의 수정 후 재검사는 사용자 확인 필요.
