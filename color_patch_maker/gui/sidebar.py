@@ -36,6 +36,14 @@ class ErrorLabel(QLabel):
     def setText(self, text):
         super().setText(text)
         self.setVisible(bool(text))
+        self.fit_message()
+
+    def fit_message(self):
+        self.setMinimumHeight(max(0, self.heightForWidth(max(1, self.width()))) if self.text() else 0)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.fit_message()
 
 
 class StableStack(QStackedWidget):
@@ -200,6 +208,7 @@ class Sidebar(QWidget):
         for title, name, value in specs:
             field = QVBoxLayout()
             field.setSpacing(2)
+            field.setAlignment(Qt.AlignmentFlag.AlignTop)
             widget = named(QLineEdit(value), name) if isinstance(value, str) else value
             widget.setMinimumWidth(0)
             widget.setFixedHeight(26)

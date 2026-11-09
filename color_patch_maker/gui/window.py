@@ -1,7 +1,8 @@
-"""Main window composition; no calculation or output connections."""
+"""Main window composition and input/preview controller."""
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from .sidebar import Sidebar, named
 from .preview import Preview
+from .controller import Controller
 
 
 class MainWindow(QMainWindow):
@@ -38,3 +39,4 @@ class MainWindow(QMainWindow):
             QScrollArea { border: none; }
             QPushButton { min-height: 28px; }
         ''')
+        self.controller = Controller(self)

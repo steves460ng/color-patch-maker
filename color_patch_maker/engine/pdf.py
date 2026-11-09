@@ -6,7 +6,7 @@ import pikepdf
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.units import mm
 from reportlab.pdfbase.pdfmetrics import stringWidth
-from color_patch_maker.engine import LABEL_FONT
+from color_patch_maker.engine import LABEL_FONT, page_header
 
 
 def verify(pdf_path, manifest_path):
@@ -86,7 +86,7 @@ def export(document, out_dir):
             canvas = Canvas(str(path.with_suffix('.pdf')), pagesize=[v*mm for v in document['paper_mm']], invariant=1)
             canvas.setFillColorCMYK(0, 0, 0, 1)
             canvas.setFont('Helvetica', 8)
-            header = f"{document['settings']['mode']} {document['stem']} | {page['number']}/{len(pages)} | {page['patches'][0]['id']} - {page['patches'][-1]['id']}"
+            header = page_header(document, page)
             available = (document['paper_mm'][0]-2*document['settings']['margin'])*mm
             canvas.setFont('Helvetica', min(8, 8*available/stringWidth(header, 'Helvetica', 8)))
             canvas.drawString(document['settings']['margin']*mm, (document['paper_mm'][1]-document['settings']['margin']-5)*mm, header)
