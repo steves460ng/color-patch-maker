@@ -1,6 +1,7 @@
 """Catalog coverage and Korean behavior recorded before the refactor."""
 import ast
 import json
+import os
 import re
 from pathlib import Path
 from string import Formatter
@@ -140,10 +141,30 @@ def test_expanded_reserved_names():
 CLI_GOLDEN=json.loads((Path(__file__).parent/'fixtures/cli_en.json').read_text(encoding='utf-8'))
 
 
+def normalize_cli_output_paths(stdout, folder):
+    # Normalize only the output-directory prefix, including its JSON-escaped separator.
+    encoded_path = json.dumps(str(folder), ensure_ascii=False)[1:-1]
+    sep = json.dumps(os.sep)[1:-1]
+    return stdout.replace(encoded_path + sep, '{OUTPUT}/')
+
+
+def test_cli_output_paths_with_windows_separator(monkeypatch):
+    monkeypatch.setattr(os, 'sep', '\\')
+    folder = r'C:\Users\사용자\출력'
+    for case in CLI_GOLDEN:
+        if not case['hashes']:
+            continue
+        expected = case['stdout']
+        files = json.loads(expected)['files']
+        stdout = json.dumps({
+            'files': [folder + os.sep + name.removeprefix('{OUTPUT}/') for name in files]
+        }, ensure_ascii=False) + '\n'
+        assert normalize_cli_output_paths(stdout, folder) == expected
+
+
 @pytest.mark.parametrize('case',CLI_GOLDEN,ids=lambda case:' '.join(case['args']))
 def test_cli_english_output(case,tmp_path):
     import hashlib
-    import os
     import subprocess
     import sys
     from color_patch_maker.engine.pdf import verify
@@ -152,8 +173,7 @@ def test_cli_english_output(case,tmp_path):
     env=os.environ.copy();env['PYTHONIOENCODING']='utf-8'
     result=subprocess.run([sys.executable,'-m','color_patch_maker.cli',*args],env=env,
                           capture_output=True,text=True,encoding='utf-8')
-    encoded_path=json.dumps(str(folder),ensure_ascii=False)[1:-1]
-    assert result.stdout.replace(encoded_path,'{OUTPUT}')==case['stdout']
+    assert normalize_cli_output_paths(result.stdout,folder)==case['stdout']
     assert result.stderr==case['stderr']
     assert result.returncode==case['code']
     assert {p.name for p in folder.glob('*')}==set(case['hashes'])

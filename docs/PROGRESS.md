@@ -137,6 +137,7 @@ GUI는 2-1 배치, 2-2 연결, 2-3 출력의 세 PR로 나눠 진행합니다(�
 | 2026-11-09 | GUI 2-6 문구 사전·오류 코드·템플릿 ID | Linux offscreen 619개 통과, 변경 전 오류·CLI 일치, 캡처 22장 픽셀 일치 | 2-7 영어 113개 키·언어 설정 |
 | 2026-11-09 | GUI 2-7 영어 화면·CLI 영어 | Linux offscreen 전체 813개 통과, 두 언어 PDF·JSON 동일, 캡처 44장 | Windows 영어 화면·대화 상자·1024×720 확인 |
 | 2026-11-09 | PR #27 리뷰: 영어 문구·재시작 알림 조건 | Linux offscreen 전체 816개 통과, 영어 변경 캡처 20장 갱신·한국어 유지 | Windows 125%·150% 선택 상자 확인 |
+| 2026-11-09 | Windows CLI 테스트 경로 비교 수정 | Linux offscreen 전체 817개 통과(33.33초), Windows JSON 구분자 모사 3사례·diff 검사 통과. Python 3.12.14. CLI·fixture 유지, 다른 경로 비교는 추가 수정 불필요 | 실제 Windows는 사용자 build_windows.ps1 확인 필요 |
 
 ### 1단계 검증 범위와 한계
 
