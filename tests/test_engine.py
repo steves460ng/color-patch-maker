@@ -160,3 +160,74 @@ def test_partial_collision(tmp_path):
     assert '_v2.pdf' in files[0]
     assert existing.read_text() == 'original'
     assert not (tmp_path/(d['stem']+'.pdf')).exists()
+
+
+@pytest.mark.parametrize('cols', range(1, 16))
+@pytest.mark.parametrize('rows', range(1, 16))
+def test_auto_grid_single_page(tmp_path, cols, rows):
+    # Large paper separates pagination from the independent readability limit.
+    doc = layout('grid', cmyk=[40,70,20,0], cols=cols, rows=rows, paper=(1000,1000))
+    assert len(doc['pages']) == 1
+    files = export(doc, tmp_path)
+    assert len(files) == 2 and verify(*files)
+    try:
+        default = layout('grid', cmyk=[40,70,20,0], cols=cols, rows=rows)
+    except ValueError as exc:
+        assert '최소 6pt' in str(exc)
+    else:
+        assert len(default['pages']) == 1
+
+
+@pytest.mark.parametrize('count', range(2,61))
+def test_auto_ramp_single_page(tmp_path, count):
+    doc = layout('ramp', start=[40,70,20,0], end=[30,75,30,5], count=count)
+    assert len(doc['pages']) == 1
+    assert len(export(doc,tmp_path)) == 2
+
+
+def test_fixed_size_exact_fit():
+    size = (265-8*3)/9
+    doc = layout('grid', cmyk=[0]*4,cols=9,rows=9,patch_size=size)
+    assert len(doc['pages']) == 1
+    # Height, too: use a generous width to keep labels readable.
+    size = (450-8*3)/9-6
+    doc = layout('grid', cmyk=[40]*4,cols=1,rows=9,patch_size=size)
+    assert len(doc['pages']) == 1
+
+
+def test_label_boundary_and_pdf_font(tmp_path):
+    from color_patch_maker.engine import MIN_LABEL_PT, LABEL_FONT
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    from reportlab.lib.units import mm
+    label = 'R1C1 C100 M100 Y100 K100 *'
+    boundary = stringWidth(label,LABEL_FONT,MIN_LABEL_PT)/mm
+    with pytest.raises(ValueError, match='패치 크기를 키우거나 칸 수를 줄이세요'):
+        layout('grid',cmyk=[100]*4,cols=1,rows=1,patch_size=boundary-1e-6)
+    doc = layout('grid',cmyk=[100]*4,cols=1,rows=1,patch_size=boundary+1e-6)
+    assert patches(doc)[0]['label_font_pt'] >= MIN_LABEL_PT
+    files = export(doc,tmp_path)
+    with pikepdf.open(files[0]) as pdf:
+        sizes = [float(args[1]) for args,op in pikepdf.parse_content_stream(pdf.pages[0]) if str(op)=='Tf']
+    assert sizes[-1] >= MIN_LABEL_PT
+
+
+@pytest.mark.parametrize('extra', [['--cols','15','--rows','15'],['--patch-size','10']])
+def test_unreadable_cli_no_output(tmp_path,extra):
+    out = tmp_path/'output'
+    result = subprocess.run([sys.executable,'-m','color_patch_maker.cli','grid','--cmyk','100','100','100','100',*extra,'--out-dir',str(out)],capture_output=True,text=True)
+    assert result.returncode == 2 and '최소 6pt' in result.stderr
+    assert not out.exists()
+
+
+@pytest.mark.parametrize('option', ['--margin','--gap','--patch-size','--paper'])
+def test_invalid_mm_korean(tmp_path,option):
+    values = ['abc','505'] if option == '--paper' else ['abc']
+    result = subprocess.run([sys.executable,'-m','color_patch_maker.cli','grid','--cmyk','40','70','20','0',option,*values,'--out-dir',str(tmp_path/'out')],capture_output=True,text=True)
+    assert result.returncode == 2 and option[2:] in result.stderr and 'mm 값을 입력하세요' in result.stderr
+    assert not (tmp_path/'out').exists()
+
+
+def test_endpoint_symbols():
+    ps = patches(layout('ramp',start=[0]*4,end=[100]*4,count=3))
+    assert ps[0]['label'].endswith(' >') and ps[-1]['label'].endswith(' <')
+    assert 'start' not in ps[0]['label'] and 'end' not in ps[-1]['label']

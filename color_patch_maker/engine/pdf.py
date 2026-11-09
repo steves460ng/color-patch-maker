@@ -6,10 +6,11 @@ import pikepdf
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.units import mm
 from reportlab.pdfbase.pdfmetrics import stringWidth
+from color_patch_maker.engine import LABEL_FONT
 
 
 def verify(pdf_path, manifest_path):
-    manifest = json.loads(Path(manifest_path).read_text())
+    manifest = json.loads(Path(manifest_path).read_text(encoding='utf-8'))
     with pikepdf.open(pdf_path) as pdf:
         if len(pdf.pages) != 1:
             raise ValueError('PDF는 정확히 한 페이지여야 합니다.')
@@ -94,8 +95,8 @@ def export(document, out_dir):
                 canvas.setFillColorCMYK(*(v/100 for v in p['cmyk']))
                 canvas.rect(x*mm, y*mm, w*mm, h*mm, stroke=0, fill=1)
                 canvas.setFillColorCMYK(0, 0, 0, 1)
-                font_size = min(7, 7*w*mm/stringWidth(p['label'], 'Helvetica', 7))
-                canvas.setFont('Helvetica', font_size)
+                font_size = p['label_font_pt']
+                canvas.setFont(LABEL_FONT, font_size)
                 canvas.drawString(x*mm, (y-3)*mm, p['label'])
             canvas.showPage()
             canvas.save()

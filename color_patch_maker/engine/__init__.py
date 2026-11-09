@@ -2,6 +2,18 @@
 import math
 import re
 
+from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.lib.units import mm
+
+MIN_LABEL_PT = 6
+LABEL_FONT = "Helvetica"
+FIT_TOLERANCE_MM = 1e-9
+
+
+def capacity(available, cell):
+    """Ignore sub-nanometre rounding at an exact physical fit."""
+    return math.floor((available + FIT_TOLERANCE_MM) / cell)
+
 
 def integer(value, name, minimum=0, maximum=None):
     if isinstance(value, bool) or not re.fullmatch(r'[+-]?[0-9]+', str(value)):
@@ -19,7 +31,10 @@ def color(values):
 
 
 def number(value, name, minimum=0):
-    value = float(value)
+    try:
+        value = float(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"{name}: 숫자로 된 {minimum} 이상의 mm 값을 입력하세요.") from None
     if not math.isfinite(value) or value < minimum:
         raise ValueError(f'{name}: 유한한 {minimum} 이상의 mm 값을 입력하세요.')
     return value
@@ -65,7 +80,7 @@ def layout(mode, *, cmyk=None, start=None, end=None, channels='CM', step=1,
         if start == end:
             raise ValueError('from/to: 서로 다른 시작·끝 값을 입력하세요.')
         count = integer(count, 'count', 2)
-        auto_cols = 7 if size is None else int((width + gap) // (size + gap))
+        auto_cols = 7 if size is None else capacity(width + gap, size + gap)
         cols = integer(auto_cols if cols in (None, 'auto') else cols, 'cols', 1)
         rows = (count + cols - 1) // cols
         for i in range(count):
@@ -73,12 +88,13 @@ def layout(mode, *, cmyk=None, start=None, end=None, channels='CM', step=1,
             patches.append(dict(id=f'{i+1:02}', cmyk=values, endpoint='start' if i == 0 else 'end' if i == count-1 else ''))
         settings.update(start=start, end=end, count=count, cols=cols)
         stem = f'{color_name(start)}_to_{color_name(end)}_n{count}'
-    if size is None:
+    automatic = size is None
+    if automatic:
         size = min((width - (cols-1)*gap)/cols, (height - (rows-1)*gap)/rows - 6)
         if size < 5:
             raise ValueError('patch-size: 자동 크기가 5mm 미만입니다. 패치 크기를 지정하세요.')
-    capacity_x = int((width + gap) // (size + gap))
-    capacity_y = int((height + gap) // (size + 6 + gap))
+    capacity_x = cols if automatic else capacity(width + gap, size + gap)
+    capacity_y = rows if automatic else capacity(height + gap, size + 6 + gap)
     if min(capacity_x, capacity_y) < 1:
         raise ValueError('patch-size: 패치가 용지에 들어가지 않습니다. 크기를 줄이세요.')
     if mode == 'ramp' and cols > capacity_x:
@@ -94,7 +110,11 @@ def layout(mode, *, cmyk=None, start=None, end=None, channels='CM', step=1,
                         continue
                     p = patches[index].copy()
                     p['rect_mm'] = [margin + (c-left)*(size+gap), paper[1]-margin-15-size-(r-top)*(size+6+gap), size, size]
-                    p['label'] = p['id'] + ' ' + color_name(p['cmyk']).replace('_', ' ') + (' *' if p.get('reference') else '') + (' '+p['endpoint'] if p.get('endpoint') else '')
+                    p['label'] = p['id'] + ' ' + color_name(p['cmyk']).replace('_', ' ') + (' *' if p.get('reference') else '') + (' >' if p.get('endpoint') == 'start' else ' <' if p.get('endpoint') == 'end' else '')
+                    font_size = min(7, 7*size*mm/stringWidth(p['label'], LABEL_FONT, 7))
+                    if font_size < MIN_LABEL_PT:
+                        raise ValueError(f'라벨: 최소 {MIN_LABEL_PT}pt를 확보할 수 없습니다. 패치 크기를 키우거나 칸 수를 줄이세요.')
+                    p['label_font_pt'] = font_size
                     page.append(p)
             pages.append(dict(patches=page, number=len(pages)+1))
     return dict(settings=settings, stem=stem, paper_mm=paper, pages=pages,
