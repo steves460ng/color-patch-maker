@@ -44,8 +44,8 @@ Windows에서는 `.venv/bin/` 대신 `.venv/Scripts/`를 사용합니다.
 | `validate_template(values)` | 색·방식 입력 없이 기존 layout()의 1×1 검사로 레이아웃을 검증하고 정규화합니다. 실제 입력의 라벨·칸 수 제약은 layout()이 별도로 검사합니다. |
 | `layout(mode, **입력)` | PDF를 쓰지 않고 장 목록과 패치 ID·정수 CMYK·라벨·mm 사각형을 반환합니다. 좌표 원점은 용지 왼쪽 아래입니다. |
 | `input_errors(mode, **입력)` | 기존 검사 규칙으로 칸별 오류를 반환합니다(예: `cmyk.0`, `paper.0`, `cols`). 여러 칸에 걸친 레이아웃 오류는 `layout()`이 보고합니다. |
+| `patch_label(patch)` | CMYK 한 줄과 기준색/시작/끝 표시를 반환합니다. 패치 ID는 인쇄하지 않습니다. |
 | `output_names(document)` | 충돌 처리 전 PDF 이름 목록을 반환합니다. |
-| `page_header(document, page)` | 장 헤더 문구를 반환합니다. PDF와 미리보기가 같은 문구를 씁니다. |
 | `engine.pdf.export(document, out_dir)` | PDF와 매니페스트를 만들고 즉시 역검사합니다. 실패하면 그 실행에서 만든 파일만 정리합니다. |
 | `engine.pdf.preview_paths(document, out_dir)` | 파일을 쓰지 않고 충돌을 반영한 PDF·JSON 경로를 반환합니다. 경로를 예약하지 않으므로 실제 이름은 `export()` 반환값을 따릅니다. |
 | `engine.pdf.verify(pdf, manifest)` | 이 도구가 만든 PDF와 매니페스트 쌍의 저장값·좌표·용지 치수를 검사합니다. |
@@ -77,3 +77,12 @@ QT_QPA_PLATFORM=offscreen CPM_OFFSCREEN_SMOKE_SETTINGS="$(mktemp -d)" ./dist/Col
 `color_patch_maker/gui/resources/app.ico`(16~256px)를 두 실행 파일과 GUI 창에 씁니다. README에 쓰는 이미지는 `docs/assets/icon.png`입니다. 아이콘을 바꿀 때는 두 파일을 함께 교체합니다.
 
 기본 제공 이름·별칭과 상태 표시용 "사용자 설정"은 사용자 템플릿 이름으로 쓸 수 없습니다. 사용자 템플릿은 QSettings의 `layout_templates` JSON 사전에 레이아웃 키만 저장합니다. 손상된 항목은 개별적으로 건너뛰고 알립니다. GUI는 숫자 값이 같은 템플릿을 표시하며 같은 값을 가진 이름이 여럿이면 현재 선택을 우선하고, 그 다음 기본 제공·저장 순서로 고릅니다.
+
+
+## 출력 형식과 역검사
+
+여백 안쪽 전체를 패치·6mm 라벨 영역에 사용하며 헤더 공간은 없습니다. `page_header()`는 제거했습니다. 라벨에는 CMYK와 기준색 ` *`·시작 ` >`·끝 ` <`만 표시하고 ID·장 번호는 매니페스트와 GUI에 남깁니다. 글꼴은 Helvetica이며 엔진이 패치 폭에 맞춰 최대 7pt에서 `MIN_LABEL_PT`(4.5pt)까지 줄입니다. GUI는 엔진의 `label`과 `label_font_pt`를 그대로 사용합니다.
+
+새 매니페스트는 **schema_version 2**입니다. 키 구조는 같지만 라벨 문구·허용 크기·헤더 유무의 출력 계약이 바뀌어 이전 출력과 구분합니다. 버전 2의 verify는 PDF 전체 텍스트의 순서·개수가 매니페스트 및 CMYK로부터 만든 라벨과 같은지 검사하므로 추가 헤더·빠진 중복 라벨도 거부합니다. Helvetica 글꼴, 폭에 맞춘 글자 크기, 폭 초과, 라벨 위치·검정색도 확인합니다. 기존 DeviceCMYK 패치 값·좌표·용지·단일 페이지 검사도 유지합니다.
+
+버전 1의 기존 PDF/매니페스트는 기존 검사를 유지하여 계속 확인할 수 있습니다. 새 출력은 항상 버전 2로 생성하고 알 수 없는 버전은 거부합니다. 카드 템플릿은 85.6×54mm, 여백 2mm, 간격 1mm, 패치 18mm입니다.

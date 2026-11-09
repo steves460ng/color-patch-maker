@@ -3,7 +3,7 @@ from copy import deepcopy
 
 _TEMPLATES = {
     '기본': dict(paper=[305, 505], margin=20, gap=3, patch_size=None),
-    '카드': dict(paper=[85.6, 54], margin=3, gap=1, patch_size=25),
+    '카드': dict(paper=[85.6, 54], margin=2, gap=1, patch_size=18),
 }
 _ALIASES = {'default': '기본', 'card': '카드'}
 
