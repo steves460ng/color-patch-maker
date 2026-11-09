@@ -37,13 +37,20 @@ Windows에서는 `.venv/bin/` 대신 `.venv/Scripts/`를 사용합니다.
 결과는 stdout JSON, 경고·오류는 stderr이며 오류 종료 코드는 2입니다.
 PDF마다 같은 이름의 JSON을 저장하고 기존 이름과 충돌하면 묶음에 `_v2` 등을 붙입니다.
 
-## 콘솔 실행 파일 빌드
+## 실행 파일 빌드
+
+Windows 준비·빌드·배포·수동 확인은 [Windows 빌드 안내](docs/BUILD_WINDOWS.md)를 따르세요. 콘솔 `cpm.exe`와 GUI `ColorPatchMaker.exe`를 각각 폴더 전체로 배포합니다.
+
+Linux 개발용 설정 점검(Windows EXE는 생성하지 않음):
 
 ```sh
-.venv/bin/python -m PyInstaller --noconfirm --clean --onefile --name cpm --paths . --specpath build scripts/cpm_entry.py
+.venv/bin/python -m PyInstaller --noconfirm --clean cpm.spec
+.venv/bin/python -m PyInstaller --noconfirm --clean ColorPatchMaker.spec
+./dist/cpm/cpm --help
+QT_QPA_PLATFORM=offscreen CPM_OFFSCREEN_SMOKE_SETTINGS="$(mktemp -d)" ./dist/ColorPatchMaker/ColorPatchMaker
 ```
 
-빌드한 운영체제용 실행 파일이 `dist/`에 생성됩니다. Windows 배포 파일은 Windows에서 빌드해야 합니다.
+마지막 명령은 임시 설정으로 GUI를 열고 500ms 뒤 정상 종료하는 패키징 검사입니다.
 
 엔진의 `layout()`은 PDF를 쓰지 않고 장 목록, 패치 ID·정수 CMYK·라벨·mm 사각형을 반환합니다.
 `input_errors(mode, **입력)`은 기존 검사 규칙으로 칸별 오류 사전을 반환합니다(예: `cmyk.0`, `paper.0`, `cols`). 여러 칸에 걸친 레이아웃 오류는 `layout()`이 보고합니다.
