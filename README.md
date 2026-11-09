@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/ui/screens/1600x900-selected.png" width="860" alt="Color Patch Maker 화면: 왼쪽에 설정, 오른쪽에 7×7 패치 미리보기">
+  <img src="docs/ui/screens/1600x900-selected.png" width="100%" alt="Color Patch Maker 화면: 왼쪽에 설정, 오른쪽에 7×7 패치 미리보기">
 </p>
 
 인쇄한 색이 실물 견본과 다를 때, 숫자를 조금씩 바꿔 가며 다시 뽑아 보는 일은 번거롭습니다. Color Patch Maker는 원본 CMYK 값을 넣으면 그 주변 색을 규칙대로 펼친 패치 차트를 인쇄용 PDF로 만들어 줍니다. 인쇄물을 견본 옆에 놓고 가장 가까운 패치를 고르면, 라벨에 적힌 CMYK 값을 그대로 쓰면 됩니다.
@@ -33,7 +33,7 @@
 - 칸 수: 가로·세로 각각, 기본 7×7
 
 <p align="center">
-  <img src="docs/ui/screens/1600x900-grid.png" width="640" alt="두 채널 격자 미리보기">
+  <img src="docs/ui/screens/1600x900-grid.png" width="100%" alt="두 채널 격자 미리보기">
 </p>
 
 ### 시작·끝 보간
@@ -50,7 +50,7 @@
 | K | 0 | 1 | 1 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 |
 
 <p align="center">
-  <img src="docs/ui/screens/1600x900-ramp.png" width="640" alt="시작·끝 보간 미리보기">
+  <img src="docs/ui/screens/1600x900-ramp.png" width="100%" alt="시작·끝 보간 미리보기">
 </p>
 
 ## 인쇄 현장에 맞춘 출력
