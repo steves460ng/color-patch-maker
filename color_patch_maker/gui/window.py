@@ -23,7 +23,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.settings = settings if settings is not None else QSettings('ColorPatchMaker', 'ColorPatchMaker')
         self.language_preference = normalize_preference(self.settings.value('language', 'auto'))
-        self.language = resolve_language(self.language_preference, locale_name)
+        self.locale_name = locale_name
+        self.language = resolve_language(self.language_preference, self.locale_name)
         self.t = translator(self.language)
         self.setObjectName('main_window')
         self.setWindowTitle(self.t('app.title'))
@@ -74,7 +75,11 @@ class MainWindow(QMainWindow):
         self.language_preference = self.language_combo.currentData()
         self.settings.setValue('language', self.language_preference)
         self.settings.sync()
-        self.controller.output.status(self.t('language.restart'))
+        restart_notice = self.t('language.restart')
+        if resolve_language(self.language_preference, self.locale_name) != self.language:
+            self.controller.output.status(restart_notice)
+        elif self.controller.widget('output_status').text() == restart_notice:
+            self.controller.output.status('')
 
     def closeEvent(self, event):
         if self.controller.output.busy:

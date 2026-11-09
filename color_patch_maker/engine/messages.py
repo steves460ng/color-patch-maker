@@ -139,7 +139,7 @@ EN = {
     'grid.base': 'Base CMYK (%)',
     'grid.channels': 'Channels',
     'grid.rows': 'Rows',
-    'grid.step': 'Step (%p)',
+    'grid.step': 'Step (% points)',
     'grid.title': 'Grid settings',
     'input.channels': 'channels: choose CM, CY, CK, MY, MK or YK.',
     'input.color_compact': 'Integer 0–100',
@@ -226,7 +226,7 @@ EN = {
     'selection.base': 'Use as base',
     'selection.empty': 'Select a patch in the preview.',
     'selection.end': 'Use as end',
-    'selection.ready': 'Apply the selected color to the inputs.',
+    'selection.ready': 'You can apply the selected color to the inputs.',
     'selection.start': 'Use as start',
     'selection.title': 'Selected patch',
     'settings.missing_folder': 'The saved folder no longer exists and was cleared. Choose another folder.',
@@ -250,7 +250,7 @@ EN = {
     'template.saved_name': '{name} (saved)',
     'template.skipped': 'Skipped invalid saved templates: {names}',
     'template.unknown': 'template: choose default or card (Korean aliases are also accepted).',
-    'warning.clamped': '{count} patches clamped to 0/100',
+    'warning.clamped': 'Patches clamped to 0/100: {count}',
     'warning.split': 'Split into {count} single-page PDFs because the patches do not fit on one sheet.',
 }
 

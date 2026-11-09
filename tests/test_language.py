@@ -195,3 +195,33 @@ def test_gui_translation_calls_are_explicit():
                 assert node.args or node.keywords,(path,node.lineno)
             if isinstance(node,ast.Call) and isinstance(node.func,ast.Name) and node.func.id=='t':
                 assert len(node.args)>=2 or any(k.arg=='language' for k in node.keywords),(path,node.lineno)
+
+
+@pytest.mark.parametrize('language,locale', [('ko', 'ko_KR'), ('en', 'en_US')])
+def test_restart_notice_only_for_effective_language_change(app, tmp_path, language, locale):
+    settings = settings_at(tmp_path / 'restart.ini', language)
+    w = MainWindow(settings, locale_name=locale)
+    try:
+        other = 'en' if language == 'ko' else 'ko'
+        for preference, expected_notice in [
+            (other, w.t('language.restart')), (language, ''),
+            (other, w.t('language.restart')), ('auto', ''),
+        ]:
+            w.language_combo.setCurrentIndex(w.language_combo.findData(preference))
+            assert settings.value('language') == preference
+            assert widget(w, 'output_status').text() == expected_notice
+            assert w.language == language
+        # A no-op language change must not erase unrelated output results.
+        status = w.t('output.success', names='chart.pdf')
+        w.controller.output.status(status)
+        w.language_combo.setCurrentIndex(w.language_combo.findData(language))
+        assert settings.value('language') == language
+        assert widget(w, 'output_status').text() == status
+    finally:
+        w.close()
+
+
+def test_reviewed_english_phrasing():
+    assert t('grid.step', 'en') == 'Step (% points)'
+    assert t('selection.ready', 'en') == 'You can apply the selected color to the inputs.'
+    assert t('warning.clamped', 'en', count=1) == 'Patches clamped to 0/100: 1'

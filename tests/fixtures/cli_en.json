@@ -78,7 +78,7 @@
       "0"
     ],
     "stdout": "{\"files\": [\"{OUTPUT}/C0_M100_Y20_K0_CM_s1.pdf\", \"{OUTPUT}/C0_M100_Y20_K0_CM_s1.json\"]}\n",
-    "stderr": "33 patches clamped to 0/100\n",
+    "stderr": "Patches clamped to 0/100: 33\n",
     "code": 0,
     "hashes": {
       "C0_M100_Y20_K0_CM_s1.json": "e743adbf2ece28c664253cc37779e7dc4e36c3f2380ff16a316f7d6eda1ecf53",
@@ -97,7 +97,7 @@
       "card"
     ],
     "stdout": "{\"files\": [\"{OUTPUT}/C100_M100_Y100_K100_CM_s1_01.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_01.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_02.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_02.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_03.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_03.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_04.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_04.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_05.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_05.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_06.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_06.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_07.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_07.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_08.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_08.json\"]}\n",
-    "stderr": "33 patches clamped to 0/100\n",
+    "stderr": "Patches clamped to 0/100: 33\n",
     "code": 0,
     "hashes": {
       "C100_M100_Y100_K100_CM_s1_07.json": "915f18056ce98784edd9f5b455e83ad855c705db35066d30394939564397886b",
