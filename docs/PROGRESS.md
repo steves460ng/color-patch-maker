@@ -55,7 +55,7 @@ GUI는 2-1 배치, 2-2 연결, 2-3 출력의 세 PR로 나눠 진행합니다(�
 
 ## 3. 배포
 
-- [ ] 콘솔·GUI 두 실행 파일 빌드 설정.
+- [x] 콘솔·GUI 두 실행 파일 빌드 설정 작성(onedir). Windows 실빌드는 미확인.
 - [ ] Windows에서 빌드.
 - [ ] Python 없는 Windows PC에서 실행 확인.
 
@@ -81,6 +81,7 @@ GUI는 2-1 배치, 2-2 연결, 2-3 출력의 세 PR로 나눠 진행합니다(�
 | 2026-11-09 | 탭 전환 레이아웃 안정화 | Linux offscreen 전체 339개 통과(엔진 323 + GUI 16), 캡처 갱신 | Windows 화면 재확인 및 엔진 연결 |
 | 2026-11-09 | GUI 2-2 엔진 연결 | Linux offscreen 전체 379개 통과, 상태별 캡처 12장 | GUI 2-3 출력 연결 |
 | 2026-11-09 | GUI 2-3 출력·설정 및 화면 다듬기 | Linux offscreen 리뷰 반영 후 전체 414개 통과, 캡처 18장 갱신 | Windows 수동 확인·3단계 배포 |
+| 2026-11-09 | Windows 배포 준비: 두 spec·빌드/확인 스크립트·안내 | Linux 두 빌드 및 CLI 4 PDF 역검사·GUI offscreen 종료 통과, 전체 414개 통과. PowerShell/Windows 미실행 | 사용자 Windows 빌드 및 Python 없는 PC 확인 |
 
 ### 1단계 검증 범위와 한계
 
@@ -162,3 +163,16 @@ GUI는 2-1 배치, 2-2 연결, 2-3 출력의 세 PR로 나눠 진행합니다(�
 - Enter/키패드 Enter 단축키를 제거했다. 기존 Enter 출력 테스트는 버튼 실행으로 바꾸고, 두 키가 입력칸에서 출력을 시작하지 않는 검사를 추가했다.
 - 전체 `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q`: 414개 통과, 실패·건너뜀 없음. Linux / Python 3.12.14 / PySide6 6.8.3. 100개 파일 목록의 내부 스크롤, 하단 높이 불변도 검사했다.
 - 확장된 검사에서 폴더 미선택+보간 오류의 여유가 15px임을 발견하고 섹션 간격을 추가로 줄인 뒤 재검사했다. 캡처 18장을 갱신했다. Windows/Python 3.13 실환경 검증은 수행하지 않았다.
+
+
+### Windows 배포 준비
+
+- 최신 main(`4d9ef31`)에서 `feat/windows-build`를 만들었다. `cpm.spec`은 콘솔, `ColorPatchMaker.spec`은 windowed GUI를 각각 onedir로 빌드한다. onefile의 매 실행 압축 해제와 PySide6 시작 지연을 피하고 Qt 플러그인을 함께 배포하기 위해 폴더 배포를 선택했다. 실행 파일 두 개라는 설계 제안을 유지하며 제안과 다른 기능은 없다.
+- ReportLab 데이터(글꼴 포함)를 명시 수집하고 pikepdf 및 Qt 네이티브 라이브러리는 PyInstaller 훅으로 수집한다. GUI 플랫폼 플러그인을 명시 수집하며 Windows에서 qwindows.dll 누락 시 빌드를 실패시킨다.
+- Windows PyInstaller의 전이 빌드 도구 `pefile==2023.2.7`, `pywin32-ctypes==0.2.3`을 Windows 조건으로 고정했다. 새 앱 런타임 의존성은 없다. build/dist 및 `.venv-build`는 커밋하지 않는다.
+- `scripts/build_windows.ps1`: Python 3.12 x64 검사, 가상환경, 고정 의존성, 전체 테스트, 두 빌드, 파일 위치 출력. 단계 실패는 한글 안내 후 종료한다. `check_windows.ps1`은 Python 없이 새 임시 폴더에서 격자·보간·분할·역검사·소수 거부를 확인한다. 두 스크립트는 Windows PowerShell 5.1의 한글 처리를 위해 UTF-8 BOM으로 저장했다.
+- `docs/BUILD_WINDOWS.md`에 복사 실행 명령, 전체 폴더 배포, Python 없는 PC 확인, GUI 수동 표, 문제 해결을 작성했다. README는 해당 문서로 연결한다.
+- Linux x86_64 / Python 3.12.14 / PyInstaller 6.16.0 / PySide6 6.8.3: `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q` **414개 통과**, 실패·건너뜀 없음. `pip check`, `git diff --check` 통과.
+- `.venv/bin/python -m PyInstaller --noconfirm --clean cpm.spec` 및 `ColorPatchMaker.spec` 모두 성공. 빌드한 CLI로 grid 1장, ramp 1장, 50mm 지정 분할 2장(총 4 PDF)을 출력하고 각 PDF/JSON verify 통과. 소수 40.5/40.0은 종료 코드 2와 파일 미생성 확인.
+- 빌드한 GUI는 `QT_QPA_PLATFORM=offscreen CPM_OFFSCREEN_SMOKE_SETTINGS=<임시폴더>`로 실행해 창을 표시하고 500ms 후 정상 종료(코드 0). 이 환경 변수 조합은 빌드 진단용이며 임시 QSettings를 사용한다. Fontconfig의 쓰기 가능한 캐시 디렉터리 경고가 있었지만 종료 및 테스트는 통과했다.
+- PowerShell 실행기(pwsh/powershell)가 없어 문법 파서 검사와 스크립트 실행은 건너뛰었다. 코드는 정적 검토만 했다. Windows 빌드, qwindows.dll 로드, 콘솔 창 유무, 실제 폴더 대화상자/탐색기, Windows 글꼴·배율, Python 없는 Windows PC 실행은 모두 미확인이다. 사용자 확인 표를 받은 뒤 결과를 갱신한다.
