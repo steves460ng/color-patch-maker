@@ -34,7 +34,7 @@ The app's interface is in Korean. Screen names in this guide are given in Englis
 
 ## Two patch modes
 
-### Two-channel grid (두 채널 격자)
+### Two-channel grid
 
 Keeps the base color in the middle and changes two channels across and down in fixed steps. The other two channels stay the same. Use it when you want to adjust two channels together, such as "a little less magenta and a little more cyan".
 
@@ -46,7 +46,7 @@ Keeps the base color in the middle and changes two channels across and down in f
   <img src="docs/ui/screens/1600x900-grid.png" width="100%" alt="Two-channel grid preview">
 </p>
 
-### Start–end ramp (시작·끝 보간)
+### Start–end ramp
 
 Divides the range between a start color and an end color evenly into the number of patches you choose. All four channels change together, so use it when three or more channels need adjusting, or to look closely at the range between two candidates you picked earlier.
 
@@ -85,7 +85,7 @@ Example: C40 M70 Y20 K0 → C30 M75 Y30 K5, 11 patches
 
 The window stays responsive while the PDF is being made. When it finishes, you see the list of files and the check result, and **Open folder** (폴더 열기) takes you straight there. The save folder and layout settings come back the next time you open the app.
 
-Expand Layout to choose **Default** (기본, 305×505 mm) or **Card** (카드, 85.6×54 mm). Save the sheet, margin, spacing and patch size you use often under a name with **Save template** (템플릿 저장). Saving over an existing name asks first, and only templates you created can be deleted. **Reset to defaults** (기본값으로 되돌리기) resets only the layout and keeps your colors, patch counts and save folder.
+Expand Layout to choose **Default** (305×505 mm) or **Card** (85.6×54 mm). Save the sheet, margin, spacing and patch size you use often under a name with **Save template**. Saving over an existing name asks first, and only templates you created can be deleted. **Reset to defaults** resets only the layout and keeps your colors, patch counts and save folder.
 
 The Card template uses a 2 mm margin and 18 mm patches, fitting up to 8 patches (4×2) per card. A 7×7 grid becomes 8 PDFs and a 3×3 grid becomes 2, with labels for every CMYK value.
 
