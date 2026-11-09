@@ -1,0 +1,320 @@
+<title>Color Patch Maker 화면 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: landscape app window filling the screen — settings | sheet preview | selection & output */
+:root{
+  --bg:#eef0f2; --panel:#ffffff; --ink:#1d2329; --muted:#5d6873; --line:#d5dae0;
+  --accent:#0a6f8f; --accent-ink:#ffffff; --warn-bg:#fff3d6; --warn-ink:#7a5200;
+  --err:#b3261e; --paper:#ffffff; --sheet-shadow:0 1px 3px rgba(20,30,40,.18);
+  --sans:"IBM Plex Sans KR",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15191d; --panel:#1e2328; --ink:#e4e8ec; --muted:#97a2ad; --line:#333b43;
+  --accent:#4fb3d4; --accent-ink:#0b1a20; --warn-bg:#3a2f12; --warn-ink:#f3cf7a;
+  --err:#ff8a80; --paper:#f4f4f2; --sheet-shadow:0 1px 4px rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15191d; --panel:#1e2328; --ink:#e4e8ec; --muted:#97a2ad; --line:#333b43;
+  --accent:#4fb3d4; --accent-ink:#0b1a20; --warn-bg:#3a2f12; --warn-ink:#f3cf7a;
+  --err:#ff8a80; --paper:#f4f4f2; --sheet-shadow:0 1px 4px rgba(0,0,0,.6); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;display:flex;flex-direction:column;gap:8px;
+  padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.note{margin:0;color:var(--muted);font-size:12px}
+.app{flex:1;min-height:560px;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.titlebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.titlebar h1{font-size:15px;font-weight:600;margin:0}
+.titlebar span{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.main{flex:1;min-height:0;display:grid;grid-template-columns:380px minmax(0,1fr)}
+.aux{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}
+.modebar{padding:12px 16px;border-bottom:1px solid var(--line)}
+.aux-body{flex:1;min-height:0;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.aux-foot{border-top:1px solid var(--line);padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.card{border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:12px}
+.card h2{font-size:13px;font-weight:600;margin:0}
+details.card{display:block}
+.hint{font-size:12px;color:var(--muted);margin-top:-6px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.tabs button{font:inherit;padding:8px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.field{display:flex;flex-direction:column;gap:6px}
+.field>label,.legend{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.cmyk{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cmyk label{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+input,select{font:inherit;font-family:var(--mono);width:100%;min-width:0;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink)}
+input[aria-invalid="true"]{border-color:var(--err)}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.err{color:var(--err);font-size:12px;min-height:0}
+summary{cursor:pointer;font-weight:600;font-size:13px}
+details[open] summary{margin-bottom:2px}
+summary small{font-weight:400;color:var(--muted);font-family:var(--mono);margin-left:6px}
+details .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.preview{padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0;align-items:center;background:var(--bg)}
+.sheet-wrap{flex:1;min-height:0;width:100%;display:flex;justify-content:center}
+.sheet{position:relative;background:var(--paper);box-shadow:var(--sheet-shadow);height:100%;aspect-ratio:305/505;max-width:100%}
+.sheet .hdr{position:absolute;font-family:var(--mono);color:#333;font-size:9px;line-height:1.3;white-space:nowrap;overflow:hidden}
+.patch{position:absolute;border:0;padding:0;cursor:pointer}
+.patch.ref{outline:2px solid #111;outline-offset:1px}
+.patch.sel{outline:2px solid #0a6f8f;outline-offset:2px}
+.patch .lb{position:absolute;left:0;top:100%;width:100%;overflow:hidden;text-overflow:clip;font-family:var(--mono);font-size:6px;color:#333;white-space:nowrap;margin-top:1px}
+.pager{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;color:var(--muted);flex-wrap:wrap;justify-content:center}
+.pager button,.btn{font:inherit;padding:6px 12px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink);cursor:pointer}
+.pager button:disabled{opacity:.4;cursor:default}
+.screen-note{font-size:12px;color:var(--muted)}
+.picked{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center}
+.chip{width:44px;height:44px;border-radius:3px;border:1px solid var(--line);flex:none}
+.picked code{font-family:var(--mono);font-size:13px}
+.picked .acts{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+.picked .screen-note{grid-column:1/-1}
+
+.warn{background:var(--warn-bg);color:var(--warn-ink);border-radius:4px;padding:6px 10px;font-size:13px}
+.folder{display:flex;gap:6px;min-width:0;align-items:center}
+.folder .btn{white-space:nowrap;flex:none}
+.fname{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--bg);border-radius:4px;padding:6px 8px;overflow-wrap:anywhere}
+.primary{width:100%;font:inherit;font-weight:600;padding:11px 18px;border:0;border-radius:5px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.primary:disabled{opacity:.4;cursor:not-allowed}
+.done{font-size:13px;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.stats div{min-width:0;background:var(--bg);border-radius:4px;padding:8px;display:flex;flex-direction:column;gap:2px}
+.stats b{font-family:var(--mono);font-size:16px;font-weight:500}
+.stats span{font-size:11px;color:var(--muted)}
+@media (max-width:760px){html,body{height:auto}.main{grid-template-columns:1fr}.aux{border-right:0;border-bottom:1px solid var(--line)}.aux-body{overflow:visible}.sheet{height:auto;width:min(100%,360px)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<p class="note">화면 설계 시안입니다. 계산과 배치는 설계 문서 규칙대로 동작하지만, 실제 PDF는 만들지 않습니다. 화면 색은 단순 변환한 참고색입니다.</p>
+
+<div class="app">
+  <div class="titlebar"><h1>Color Patch Maker</h1><span>305×505mm · DeviceCMYK</span></div>
+  <div class="main">
+    <div class="aux" aria-label="설정과 출력">
+      <div class="modebar">
+        <div class="tabs" role="tablist" aria-label="패치 방식">
+          <button role="tab" id="tab-grid" aria-selected="true" aria-controls="panel-grid">두 채널 격자</button>
+          <button role="tab" id="tab-ramp" aria-selected="false" aria-controls="panel-ramp">시작·끝 보간</button>
+        </div>
+      </div>
+
+      <div class="aux-body">
+        <section class="card" id="panel-grid" role="tabpanel" aria-labelledby="tab-grid">
+          <h2>격자 설정</h2>
+          <div class="field"><span class="legend">기준 CMYK (%)</span>
+            <div class="cmyk" data-set="base"></div><div class="err" id="err-base"></div></div>
+          <div class="row2">
+            <div class="field"><label for="channels">변형 채널 (가로/세로)</label>
+              <select id="channels"><option>CM</option><option>CY</option><option>CK</option><option>MY</option><option>MK</option><option>YK</option></select></div>
+            <div class="field"><label for="step">간격 (%p)</label><input id="step" value="1" inputmode="numeric"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="cols">가로 칸 수</label><input id="cols" value="7" inputmode="numeric"></div>
+            <div class="field"><label for="rows">세로 칸 수</label><input id="rows" value="7" inputmode="numeric"></div>
+          </div>
+          <div class="err" id="err-grid"></div>
+        </section>
+
+        <section class="card" id="panel-ramp" role="tabpanel" aria-labelledby="tab-ramp" hidden>
+          <h2>보간 설정</h2>
+          <div class="field"><span class="legend">시작 CMYK (%)</span>
+            <div class="cmyk" data-set="from"></div><div class="err" id="err-from"></div></div>
+          <div class="field"><span class="legend">끝 CMYK (%)</span>
+            <div class="cmyk" data-set="to"></div><div class="err" id="err-to"></div></div>
+          <div class="row2">
+            <div class="field"><label for="count">패치 수 (시작·끝 포함)</label><input id="count" value="11" inputmode="numeric"></div>
+            <div class="field"><label for="rcols">가로 칸 수</label><input id="rcols" value="auto" placeholder="auto"></div>
+          </div>
+          <div class="hint">가로 칸 수 auto: 자동 크기면 7칸, 패치 크기를 정하면 한 줄 최대 칸 수</div>
+          <div class="err" id="err-ramp"></div>
+        </section>
+
+        <details class="card" id="layout">
+          <summary>레이아웃 <small id="layout-sum"></small></summary>
+          <div class="grid">
+            <div class="field"><label for="pw">용지 가로 mm</label><input id="pw" value="305"></div>
+            <div class="field"><label for="ph">용지 세로 mm</label><input id="ph" value="505"></div>
+            <div class="field"><label for="margin">여백 mm (사방)</label><input id="margin" value="20"></div>
+            <div class="field"><label for="gap">패치 간격 mm</label><input id="gap" value="3"></div>
+            <div class="field"><label for="size">패치 크기 mm</label><input id="size" value="auto" placeholder="auto"></div>
+          </div>
+          <div class="err" id="err-layout"></div>
+        </details>
+
+        <section class="card"><h2>선택한 패치</h2><div class="picked" id="picked"></div></section>
+        <section class="card"><h2>알림</h2><div id="warns" style="display:flex;flex-direction:column;gap:6px"></div></section>
+      </div>
+
+      <div class="aux-foot">
+        <div class="stats"><div><b id="st-n" class="num">–</b><span>패치</span></div><div><b id="st-p" class="num">–</b><span>PDF</span></div><div><b id="st-s" class="num">–</b><span>패치 mm</span></div></div>
+        <span id="summary" hidden></span>
+        <div class="folder"><input id="folder" value="D:\charts" aria-label="저장 폴더"><button class="btn" type="button">찾기</button></div>
+        <div class="fname" id="fname"></div>
+        <button class="primary" id="make">PDF 만들기</button>
+        <div class="done" id="done" role="status"></div>
+      </div>
+    </div>
+
+    <section class="preview" aria-label="미리보기">
+      <div class="sheet-wrap"><div class="sheet" id="sheet"></div></div>
+      <div class="pager">
+        <button id="prev" aria-label="이전 장">◀</button>
+        <span id="pageinfo" class="num"></span>
+        <button id="next" aria-label="다음 장">▶</button>
+        <span class="screen-note">· 화면 색은 인쇄색과 다를 수 있습니다.</span>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const CH="CMYK";
+const state={mode:"grid",base:[40,70,20,0],from:[40,70,20,0],to:[30,75,30,5],page:0,sel:null,made:{}};
+const $=id=>document.getElementById(id);
+
+// CMYK input rows
+document.querySelectorAll(".cmyk").forEach(box=>{
+  const set=box.dataset.set;
+  CH.split("").forEach((c,i)=>{
+    const l=document.createElement("label");
+    l.innerHTML=`${c}<input id="${set}-${c}" inputmode="numeric" value="${state[set][i]}" aria-label="${set} ${c}">`;
+    box.appendChild(l);
+  });
+});
+
+function intField(el,min,max){ // integer only; "40.0" rejected
+  const s=el.value.trim();
+  const ok=/^\d+$/.test(s)&&+s>=min&&(max==null||+s<=max);
+  el.setAttribute("aria-invalid",ok?"false":"true");
+  return ok?+s:null;
+}
+function numField(el,min){const v=Number(el.value);const ok=el.value.trim()!==""&&isFinite(v)&&v>=min;el.setAttribute("aria-invalid",ok?"false":"true");return ok?v:null;}
+function readCMYK(set){
+  const vals=CH.split("").map(c=>intField($(`${set}-${c}`),0,100));
+  $(`err-${set}`).textContent=vals.includes(null)?"0~100 사이 정수만 입력하세요. 인쇄기는 정수값만 출력합니다.":"";
+  return vals.includes(null)?null:vals;
+}
+function toRGB([c,m,y,k]){const f=v=>Math.round(255*(1-v/100)*(1-k/100));return `rgb(${f(c)},${f(m)},${f(y)})`;}
+const roundHalfUp=(s,d,i,n)=>Math.floor((2*(s*(n-1)+d*i)+(n-1))/(2*(n-1))); // exact integer arithmetic
+
+function layoutCfg(){
+  const pw=numField($("pw"),50),ph=numField($("ph"),50),mg=numField($("margin"),0),gp=numField($("gap"),0);
+  const sraw=$("size").value.trim().toLowerCase();
+  let size="auto";
+  if(sraw!=="auto"&&sraw!==""){size=numField($("size"),5);} else $("size").setAttribute("aria-invalid","false");
+  const bad=[pw,ph,mg,gp,size].includes(null);
+  $("err-layout").textContent=bad?"용지·여백·간격은 0 이상, 패치 크기는 5mm 이상 또는 auto로 입력하세요.":"";
+  $("layout-sum").textContent=bad?"":`${pw}×${ph} · 여백 ${mg} · ${size==="auto"?"자동":size+"mm"}`;
+  return bad?null:{pw,ph,mg,gp,size,hdr:15,lab:6};
+}
+
+// Build the full logical grid: cells[r][c] with r=0 at the top of the printed sheet
+function buildGrid(){
+  const b=readCMYK("base"),step=intField($("step"),1),cols=intField($("cols"),1,99),rows=intField($("rows"),1,99);
+  $("err-grid").textContent=(step==null?"간격은 1 이상 정수입니다. ":"")+((cols==null||rows==null)?"칸 수는 1 이상 정수입니다.":"");
+  if(!b||step==null||cols==null||rows==null)return null;
+  const [cx,cy]=[CH.indexOf($("channels").value[0]),CH.indexOf($("channels").value[1])];
+  const rc=Math.floor((cols-1)/2), rr=Math.floor((rows-1)/2); // even: left / top of centre
+  const cells=[];let clamped=0;
+  for(let r=0;r<rows;r++){for(let c=0;c<cols;c++){
+    const v=b.slice(); v[cx]+= (c-rc)*step; v[cy]+= (rr-r)*step; // values grow right and up
+    let cl=false; for(let i=0;i<4;i++){if(v[i]<0){v[i]=0;cl=true}if(v[i]>100){v[i]=100;cl=true}}
+    if(cl)clamped++;
+    cells.push({r,c,id:`R${rows-r}C${c+1}`,v,ref:r===rr&&c===rc,clamped:cl});
+  }}
+  return {cells,cols,rows,clamped,name:`C${b[0]}_M${b[1]}_Y${b[2]}_K${b[3]}_${$("channels").value}_s${step}`,
+          head:`두 채널 격자 · 기준 C${b[0]} M${b[1]} Y${b[2]} K${b[3]} · ${$("channels").value} · 간격 ${step}%p`};
+}
+function buildRamp(){
+  const f=readCMYK("from"),t=readCMYK("to"),n=intField($("count"),2,500);
+  const craw=$("rcols").value.trim().toLowerCase(), autoCols=craw===""||craw==="auto";
+  let cols=7;
+  if(autoCols){$("rcols").setAttribute("aria-invalid","false");
+    const L0=layoutCfg(); if(L0&&L0.size!=="auto")cols=Math.max(1,Math.floor((L0.pw-2*L0.mg+L0.gp)/(L0.size+L0.gp)));}
+  else cols=intField($("rcols"),1,99);
+  let msg=(n==null?"패치 수는 2 이상 정수입니다. ":"")+(cols==null?"가로 칸 수는 1 이상 정수입니다.":"");
+  if(f&&t&&f.every((x,i)=>x===t[i]))msg+="시작과 끝이 같습니다.";
+  $("err-ramp").textContent=msg;
+  if(!f||!t||n==null||cols==null||msg)return null;
+  const cells=[];
+  for(let i=0;i<n;i++){
+    const v=f.map((s,k)=>roundHalfUp(s,t[k]-s,i,n));
+    cells.push({r:Math.floor(i/cols),c:i%cols,id:String(i+1).padStart(2,"0"),v,start:i===0,end:i===n-1});
+  }
+  return {cells,cols,rows:Math.ceil(n/cols),clamped:0,ramp:true,
+    name:`C${f[0]}_M${f[1]}_Y${f[2]}_K${f[3]}_to_C${t[0]}_M${t[1]}_Y${t[2]}_K${t[3]}_n${n}`,
+    head:`시작·끝 보간 · C${f[0]} M${f[1]} Y${f[2]} K${f[3]} → C${t[0]} M${t[1]} Y${t[2]} K${t[3]} · ${n}개`};
+}
+
+// Paginate: auto size fits one sheet; fixed size splits (grid: top-left blocks, ramp: whole rows)
+function paginate(g,L){
+  const uw=L.pw-2*L.mg, uh=L.ph-2*L.mg-L.hdr;
+  if(L.size==="auto"){
+    const s=Math.min((uw-(g.cols-1)*L.gp)/g.cols,(uh-(g.rows-1)*(L.gp+L.lab))/g.rows-L.lab);
+    if(s<5)return {error:"자동 크기로는 패치가 5mm보다 작아집니다. 패치 크기를 mm로 지정하세요."};
+    return {size:s,pages:[{c0:0,c1:g.cols,r0:0,r1:g.rows}]};
+  }
+  const s=L.size, fc=Math.floor((uw+L.gp)/(s+L.gp)), fr=Math.floor((uh+L.gp)/(s+L.lab+L.gp));
+  if(fc<1||fr<1)return {error:"패치 한 개도 용지에 들어가지 않습니다. 크기를 줄이세요."};
+  if(g.ramp&&g.cols>fc)return {error:`이 크기에서는 한 줄에 최대 ${fc}칸까지 들어갑니다.`};
+  const pages=[];
+  for(let r0=0;r0<g.rows;r0+=fr)for(let c0=0;c0<g.cols;c0+=(g.ramp?g.cols:fc))
+    pages.push({c0,c1:Math.min(g.cols,c0+(g.ramp?g.cols:fc)),r0,r1:Math.min(g.rows,r0+fr)});
+  return {size:s,pages};
+}
+
+function render(){
+  const g=state.mode==="grid"?buildGrid():buildRamp();
+  const L=layoutCfg();
+  const sheet=$("sheet"); sheet.innerHTML=""; sheet.style.aspectRatio=L?`${L.pw}/${L.ph}`:"305/505";
+  const warns=$("warns"); warns.innerHTML=""; ["st-n","st-p","st-s"].forEach(i=>$(i).textContent="–");
+  $("make").disabled=true; $("picked").innerHTML='<span class="screen-note">미리보기에서 패치를 누르면 값이 여기에 표시됩니다.</span>';
+  if(!g||!L){$("pageinfo").textContent="";$("summary").textContent="입력값을 확인하세요";$("fname").textContent="";return;}
+  const P=paginate(g,L);
+  if(P.error){warns.innerHTML=`<div class="warn">${P.error}</div>`;$("pageinfo").textContent="";$("summary").textContent="";$("fname").textContent="";return;}
+  state.page=Math.min(state.page,P.pages.length-1);
+  const pg=P.pages[state.page];
+  const k=sheet.clientWidth/L.pw; // px per mm
+  const hdr=document.createElement("div"); hdr.className="hdr";
+  hdr.style.left=L.mg*k+"px"; hdr.style.top=(L.mg*k)+"px"; hdr.style.right=L.mg*k+"px";
+  hdr.style.fontSize=Math.max(6,3.2*k)+"px";
+  hdr.textContent=`${g.head} · 장 ${state.page+1}/${P.pages.length}`;
+  sheet.appendChild(hdr);
+  g.cells.filter(x=>x.r>=pg.r0&&x.r<pg.r1&&x.c>=pg.c0&&x.c<pg.c1).forEach(x=>{
+    const b=document.createElement("button"); b.className="patch"+(x.ref||x.start||x.end?" ref":"")+(state.sel===x.id?" sel":"");
+    const left=L.mg+(x.c-pg.c0)*(P.size+L.gp), top=L.mg+L.hdr+(x.r-pg.r0)*(P.size+L.lab+L.gp);
+    Object.assign(b.style,{left:left*k+"px",top:top*k+"px",width:P.size*k+"px",height:P.size*k+"px",background:toRGB(x.v)});
+    const lbl=`${x.id} C${x.v[0]} M${x.v[1]} Y${x.v[2]} K${x.v[3]}${x.ref?" *":""}${x.start?" 시작":""}${x.end?" 끝":""}`;
+    b.setAttribute("aria-label",lbl); b.innerHTML=`<span class="lb" style="font-size:${Math.max(4,1.8*k)}px">${lbl}</span>`;
+    b.onclick=()=>{state.sel=x.id;render();showPicked(x,g);};
+    sheet.appendChild(b);
+    if(state.sel===x.id)showPicked(x,g);
+  });
+  $("pageinfo").textContent=`장 ${state.page+1} / ${P.pages.length}`;
+  $("prev").disabled=state.page===0; $("next").disabled=state.page>=P.pages.length-1;
+  $("st-n").textContent=g.cells.length; $("st-p").textContent=P.pages.length; $("st-s").textContent=P.size.toFixed(1);
+  if(g.clamped)warns.innerHTML+=`<div class="warn">${g.clamped}개 패치가 0/100%로 고정되었습니다. 같은 값의 패치도 그대로 출력합니다.</div>`;
+  if(P.pages.length>1)warns.innerHTML+=`<div class="warn">한 장에 다 들어가지 않아 단일 페이지 PDF ${P.pages.length}개로 나눠 만듭니다.</div>`;
+  const v=state.made[g.name]||0, suf=v?`_v${v+1}`:"";
+  $("fname").textContent=P.pages.length>1?`${g.name}${suf}_01.pdf … _${String(P.pages.length).padStart(2,"0")}.pdf`:`${g.name}${suf}.pdf`;
+  if(!warns.innerHTML)warns.innerHTML='<span class="screen-note">없음</span>';
+  $("make").disabled=false;
+  $("make").onclick=()=>{state.made[g.name]=v+1;$("done").textContent=`예시: ${$("fname").textContent} 생성, 역검사 통과 (시안이라 실제 파일은 만들지 않음)`;render();};
+}
+function showPicked(x,g){
+  const v=x.v, t=`C${v[0]} M${v[1]} Y${v[2]} K${v[3]}`;
+  const acts=state.mode==="grid"?`<button class="btn" data-a="base">이 값을 기준으로</button>`
+    :`<button class="btn" data-a="from">시작으로</button><button class="btn" data-a="to">끝으로</button>`;
+  $("picked").innerHTML=`<span class="chip" style="background:${toRGB(v)}"></span><code>${x.id} · ${t}</code><span class="acts">${acts}</span>`;
+  $("picked").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    CH.split("").forEach((c,i)=>$(`${b.dataset.a}-${c}`).value=v[i]); state.sel=null; state.page=0; render();});
+}
+function setMode(m){state.mode=m;state.page=0;state.sel=null;
+  $("tab-grid").setAttribute("aria-selected",m==="grid");$("tab-ramp").setAttribute("aria-selected",m==="ramp");
+  $("panel-grid").hidden=m!=="grid";$("panel-ramp").hidden=m!=="ramp";$("done").textContent="";render();}
+$("tab-grid").onclick=()=>setMode("grid"); $("tab-ramp").onclick=()=>setMode("ramp");
+$("prev").onclick=()=>{state.page--;render()}; $("next").onclick=()=>{state.page++;render()};
+document.querySelectorAll("input,select").forEach(el=>el.addEventListener("input",()=>{state.page=0;state.sel=null;$("done").textContent="";render();}));
+addEventListener("resize",render);
+render();
+</script>
