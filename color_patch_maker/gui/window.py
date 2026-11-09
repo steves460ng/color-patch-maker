@@ -1,6 +1,6 @@
 """Main window composition; no calculation or output connections."""
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel
-from .sidebar import Sidebar
+from .sidebar import Sidebar, named
 from .preview import Preview
 
 
@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         header = QHBoxLayout()
         header.addWidget(QLabel('Color Patch Maker'))
         header.addStretch()
-        header.addWidget(QLabel('305×505mm · DeviceCMYK'))
+        header.addWidget(named(QLabel('305×505mm · DeviceCMYK'), 'paper_info'))
         box.addLayout(header)
         columns = QHBoxLayout()
         columns.setSpacing(12)
@@ -31,9 +31,8 @@ class MainWindow(QMainWindow):
             QWidget.setTabOrder(before, after)
         self.setStyleSheet('''
             QWidget { font-size: 12px; }
-            QLineEdit, QComboBox { min-height: 25px; }
             QGroupBox { font-weight: bold; border: 1px solid #c5cbd2;
-                        border-radius: 5px; margin-top: 9px; padding-top: 9px; }
+                        border-radius: 5px; margin-top: 7px; padding-top: 5px; }
             QGroupBox::title { subcontrol-origin: margin; left: 9px; }
             QTabBar::tab { padding: 10px 18px; }
             QScrollArea { border: none; }

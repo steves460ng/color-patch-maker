@@ -36,7 +36,7 @@ def test_window_and_named_widgets(window):
         assert field is not None and field.text() == value
         assert field.validator() is None
         assert window.findChild(QLabel,name+'_error').text() == ''
-    for name in ['mode_tabs','grid_panel','ramp_panel','grid_channels','layout_toggle','layout_fields','layout_summary','selected_swatch','selected_id','selected_cmyk','selection_hint','warning_list','summary_patch_count','summary_pdf_count','summary_patch_size','output_folder','filename_preview','output_status','paper_placeholder','page_indicator','screen_color_note']:
+    for name in ['paper_info','mode_tabs','grid_panel','ramp_panel','grid_channels','layout_toggle','layout_fields','layout_summary','selected_swatch','selected_id','selected_cmyk','selection_hint','warning_list','summary_patch_count','summary_pdf_count','summary_patch_size','output_folder','filename_preview','output_status','paper_placeholder','page_indicator','screen_color_note']:
         assert window.findChild(QWidget,name) is not None, name
     for name in ['make_pdf_button','browse_button','use_as_base_button','use_as_start_button','use_as_end_button','previous_page_button','next_page_button']:
         assert not window.findChild(QPushButton,name).isEnabled()
@@ -71,7 +71,9 @@ def test_geometry_and_fixed_regions(window,app,size,mode):
     assert window.preview.paper.rect().contains(paper.toAlignedRect())
     footer=window.findChild(QWidget,'output_footer')
     before=(s.tabs.mapTo(window,s.tabs.rect().topLeft()),footer.mapTo(window,footer.rect().topLeft()))
-    bar=s.scroll.verticalScrollBar();assert bar.maximum()>0
+    bar=s.scroll.verticalScrollBar()
+    if size == (1024,720):
+        assert bar.maximum()>0
     bar.setValue(bar.maximum());app.processEvents()
     assert before==(s.tabs.mapTo(window,s.tabs.rect().topLeft()),footer.mapTo(window,footer.rect().topLeft()))
     assert s.scroll.horizontalScrollBar().maximum()==0
@@ -110,3 +112,40 @@ runpy.run_module('color_patch_maker.gui',run_name='__main__')
 '''
     result=subprocess.run([sys.executable,'-c',script],capture_output=True,text=True,timeout=15)
     assert result.returncode==0,result.stderr
+
+
+@pytest.mark.parametrize('mode', [0, 1])
+def test_collapsed_warnings_visible_and_error_growth(window, app, mode):
+    window.resize(1024, 720)
+    s = window.sidebar
+    s.tabs.setCurrentIndex(mode)
+    app.processEvents(); QTest.qWait(30)
+    viewport = s.scroll.viewport()
+    warnings = window.findChild(QWidget, 'warnings_panel')
+    def visible_rect(widget):
+        return widget.rect().translated(widget.mapTo(viewport, widget.rect().topLeft()))
+    assert s.scroll.verticalScrollBar().value() == 0
+    assert viewport.rect().contains(visible_rect(warnings))
+    footer = window.findChild(QWidget, 'output_footer')
+    fixed = (s.tabs.geometry(), footer.geometry(), s.scroll.geometry())
+    prefix = 'grid_cmyk' if mode == 0 else 'ramp_start'
+    errors = [window.findChild(QLabel, f'{prefix}_{c}_error') for c in 'cmyk']
+    fields = [window.findChild(QWidget, f'{prefix}_{c}') for c in 'cmyk']
+    positions = [field.geometry() for field in fields]
+    for error in errors:
+        error.setText('0~100 정수를 입력하세요.')
+    app.processEvents(); QTest.qWait(30)
+    assert all(error.isVisible() for error in errors)
+    assert fixed == (s.tabs.geometry(), footer.geometry(), s.scroll.geometry())
+    for before, field in zip(positions, fields):
+        after = field.geometry()
+        assert before.size() == after.size()
+        assert abs(before.x()-after.x()) <= 1
+        assert abs(before.y()-after.y()) <= 1  # Qt distributes spare pixels between rows.
+    # Four side-by-side errors grow a single row, rather than four blank rows.
+    assert s.scroll.verticalScrollBar().maximum() < 70
+    for error in errors:
+        error.setText('')
+    app.processEvents(); QTest.qWait(30)
+    assert all(not error.isVisible() for error in errors)
+    assert viewport.rect().contains(visible_rect(warnings))

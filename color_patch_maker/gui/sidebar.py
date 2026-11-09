@@ -24,6 +24,20 @@ def button(text, name):
     return result
 
 
+class ErrorLabel(QLabel):
+    """Reserve space only for an actual message; keep fixed regions stable."""
+    def __init__(self, name):
+        super().__init__('')
+        self.setObjectName(name)
+        self.setWordWrap(True)
+        self.setStyleSheet('color: #b3261e;')
+        self.hide()
+
+    def setText(self, text):
+        super().setText(text)
+        self.setVisible(bool(text))
+
+
 class Sidebar(QWidget):
     def __init__(self):
         super().__init__()
@@ -43,12 +57,13 @@ class Sidebar(QWidget):
 
         self.scroll = named(QScrollArea(), 'settings_scroll')
         self.scroll.setWidgetResizable(True)
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         body = named(QWidget(), 'settings_body')
         content = QVBoxLayout(body)
-        content.setContentsMargins(10, 12, 10, 12)
-        content.setSpacing(12)
+        content.setContentsMargins(10, 6, 10, 6)
+        content.setSpacing(6)
         self.grid_panel, grid = self.group('격자 설정', 'grid_panel')
         self.cmyk(grid, '기준 CMYK (%)', 'grid_cmyk', (40, 70, 20, 0))
         channel = named(QComboBox(), 'grid_channels')
@@ -90,10 +105,10 @@ class Sidebar(QWidget):
         picked, picked_layout = self.group('선택한 패치', 'selected_panel')
         selected_row = QHBoxLayout()
         chip = label('', 'selected_swatch')
-        chip.setFixedSize(32, 32)
+        chip.setFixedSize(26, 26)
         chip.setStyleSheet('background: #e5e7eb; border: 1px solid #c5cbd2;')
         selected_row.addWidget(chip)
-        text = QVBoxLayout()
+        text = QHBoxLayout()
         text.addWidget(label('–', 'selected_id'))
         text.addWidget(label('–', 'selected_cmyk'))
         selected_row.addLayout(text, 1)
@@ -117,7 +132,8 @@ class Sidebar(QWidget):
 
         footer = named(QWidget(), 'output_footer')
         foot = QVBoxLayout(footer)
-        foot.setContentsMargins(10, 10, 10, 10)
+        foot.setContentsMargins(10, 6, 10, 6)
+        foot.setSpacing(3)
         stats = QHBoxLayout()
         for title, name in [('패치 수', 'summary_patch_count'), ('PDF 수', 'summary_pdf_count'), ('패치 크기 mm', 'summary_patch_size')]:
             box = QVBoxLayout()
@@ -146,22 +162,26 @@ class Sidebar(QWidget):
     def group(title, name):
         group = named(QGroupBox(title), name)
         group.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
-        return group, QVBoxLayout(group)
+        box = QVBoxLayout(group)
+        box.setContentsMargins(8, 8, 8, 6)
+        box.setSpacing(3)
+        return group, box
 
     def row(self, parent, specs):
         row = QHBoxLayout()
+        row.setSpacing(6)
         for title, name, value in specs:
             field = QVBoxLayout()
+            field.setSpacing(2)
             widget = named(QLineEdit(value), name) if isinstance(value, str) else value
             widget.setMinimumWidth(0)
+            widget.setFixedHeight(26)
             widget.setAccessibleName(title)
             caption = QLabel(title)
             caption.setBuddy(widget)
             field.addWidget(caption)
             field.addWidget(widget)
-            error = label('', name + '_error')
-            error.setMinimumHeight(14)
-            error.setStyleSheet('color: #b3261e;')
+            error = ErrorLabel(name + '_error')
             field.addWidget(error)
             row.addLayout(field, 1)
             self.focus_widgets.append(widget)
