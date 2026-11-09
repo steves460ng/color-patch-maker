@@ -44,8 +44,8 @@
 | README 소개 페이지 | 완료 | PR #11, #12, #13 |
 
 - 자동 테스트: `main`(`24b717d`)에서 462개 통과(Linux, 화면 없는 Qt). 설계 9.1 자동 테스트 기준을 모두 포함.
-- Windows 실제 확인(사용자 PC, 2026-11-09): `build_windows.ps1` 빌드 성공, `check_windows.ps1` 통과(grid/ramp/split, PDF 4개 역검사, 소수 입력 2건 종료 코드 2), 한글 사용자 이름 경로 정상, exe 아이콘 확인. 이 확인은 PR #10(`d1cb2db`) 시점 빌드 기준이다. 2-4·2-5가 들어간 `24b717d` 이후 재빌드 결과는 아직 받지 못했다.
-- `docs/PROGRESS.md` 3장 "Windows에서 빌드"는 아직 미완료로 표시되어 있다. 위 사용자 확인 결과가 반영되지 않은 상태다.
+- Windows 실제 확인(사용자 PC, 2026-11-09): `24b717d` 이후 `main`으로 `build_windows.ps1` 빌드 성공, `check_windows.ps1` 통과(grid/ramp/split, PDF 역검사, 소수 입력 종료 코드 2), 한글 사용자 이름 경로 정상, exe 아이콘 확인.
+- 배포본: README의 Windows 내려받기(Google Drive의 `ColorPatchMaker.zip`, 약 87MB)를 위 빌드로 같은 파일의 새 버전으로 교체(링크 유지). ZIP에 `ColorPatchMaker.exe`와 `cpm.exe` 모두 포함. 앞으로도 같은 Drive 파일의 새 버전으로 교체해 링크를 유지한다.
 
 ## 제안과 가정 (확정 아님)
 
@@ -54,8 +54,6 @@
 - 카드 출력에서 패치가 왼쪽 위로 붙어 오른쪽 약 7mm, 아래 약 5mm가 비는 배치를 가운데 정렬로 바꿀지 검토 가능(설계 규칙 없음).
 
 ## 열린 질문과 막힌 점
-
-- 배포본: README의 Windows 내려받기(Google Drive의 `ColorPatchMaker.zip`)를 같은 파일의 새 버전으로 교체했다(2026-11-09 15:56, 약 87MB, 링크 유지). 사용자 보고 기준 2-5까지 들어간 새 빌드이며, 빌드한 커밋과 그 빌드의 `check_windows.ps1` 결과는 기록되지 않았다. ZIP에 `cpm` 폴더가 들어 있는지도 확인하지 못했다(README는 GUI만 들어 있는 것으로 안내).
 - 4.5pt 라벨 가독성, 기준색·시작·끝 표시 구분, 1mm 간격에서 이웃 라벨이 붙어 보이는지: 인쇄 확인 필요.
 - Python 없는 Windows PC에서의 실행: 미확인.
 - GUI 수동 확인 미완료: 폴더 선택 창, 폴더 열기, 템플릿 이름·덮어쓰기·삭제 대화 상자, 재실행 시 복원, Windows 글꼴에서 알림 영역 가림 여부.
@@ -71,13 +69,11 @@
 
 ## 다음 작업 (순서대로)
 
-1. 새 배포본을 만든 빌드의 커밋과 `check_windows.ps1` 결과를 사용자에게 받아 기록한다. 결과가 없으면 `main` 최신으로 다시 확인한다. 절차는 `docs/BUILD_WINDOWS.md`.
-2. 카드 인쇄 시험: `cpm.exe grid --cmyk 100 100 100 100 --template card --cols 4 --rows 2 --out-dir .\print-test`, `cpm.exe ramp --from 40 70 20 0 --to 30 75 30 5 --count 8 --template card --out-dir .\print-test`로 출력해 라벨 가독성 확인. 기본 용지도 함께 확인.
-3. 결과에 따라 라벨 최소 크기 확정 또는 조정(DESIGN.md 3.1 제안 → 확정), 필요하면 라벨 두 줄 방식 검토.
-4. 사용자 확인 결과(빌드, CLI, GUI, Python 없는 PC)를 PROGRESS.md 3장과 `docs/BUILD_WINDOWS.md` 확인 표에 기록(문서 PR).
-5. 배포본 ZIP 구성 확인(`cpm` 폴더 포함 여부)과 빌드 커밋 기록. 구성에 맞춰 README의 명령줄 안내 조정. 배포본은 앞으로도 같은 Drive 파일의 새 버전으로 교체해 링크를 유지한다.
-6. 미처리 다듬기를 묶어 코덱스 지시문으로 작성(작은 PR 단위).
-7. 4단계 현장 사이클 진행 후 PROGRESS.md 4장 기록.
+1. 카드 인쇄 시험: `cpm.exe grid --cmyk 100 100 100 100 --template card --cols 4 --rows 2 --out-dir .\print-test`, `cpm.exe ramp --from 40 70 20 0 --to 30 75 30 5 --count 8 --template card --out-dir .\print-test`로 출력해 라벨 가독성 확인. 기본 용지도 함께 확인.
+2. 결과에 따라 라벨 최소 크기 확정 또는 조정(DESIGN.md 3.1 제안 → 확정), 필요하면 라벨 두 줄 방식 검토.
+3. Python 없는 Windows PC 실행과 GUI 수동 확인 결과를 PROGRESS.md 3장과 `docs/BUILD_WINDOWS.md` 확인 표에 기록(문서 PR).
+4. 미처리 다듬기를 묶어 코덱스 지시문으로 작성(작은 PR 단위).
+5. 4단계 현장 사이클 진행 후 PROGRESS.md 4장 기록.
 
 ## 참고 위치 (저장소 `steves460ng/color-patch-maker` 기준)
 

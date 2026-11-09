@@ -75,8 +75,8 @@ GUI는 2-1 배치, 2-2 연결, 2-3 출력의 세 PR로 나눠 진행합니다(�
 
 ## 3. 배포
 
-- [x] 콘솔·GUI 두 실행 파일 빌드 설정 작성(onedir). Windows 실빌드는 미확인.
-- [ ] Windows에서 빌드.
+- [x] 콘솔·GUI 두 실행 파일 빌드 설정 작성(onedir).
+- [x] Windows에서 빌드. 사용자 PC, `24b717d` 이후 `main`, `build_windows.ps1` 성공·`check_windows.ps1` 통과(사용자 확인, 2026-11-09). 배포 ZIP에 `ColorPatchMaker.exe`와 `cpm.exe` 모두 포함.
 - [ ] Python 없는 Windows PC에서 실행 확인.
 
 ## 4. 현장 확인
@@ -110,6 +110,7 @@ GUI는 2-1 배치, 2-2 연결, 2-3 출력의 세 PR로 나눠 진행합니다(�
 | 2026-11-09 | 2-5 출력 정리 설계 | 헤더·라벨 ID 제거, 라벨 최소 4.5pt, 카드 템플릿 18mm·한 장 8개를 DESIGN.md에 반영. 코드 변경 없음 | 2-5 구현 |
 | 2026-11-09 | GUI 2-5 출력 정리 | Linux offscreen 전체 462개 통과, 카드 8장/2장 및 최장 라벨·역검사 확인, 캡처 22장 갱신 | 기본 용지·카드 4.5pt 인쇄 가독성 확인 |
 | 2026-11-09 | 배포본 교체 | 사용자가 2-5까지 들어간 새 빌드로 README 내려받기 파일(Google Drive `ColorPatchMaker.zip`)을 같은 링크로 교체(15:56). 빌드 커밋·check_windows 결과는 미기록 | 빌드 커밋·확인 결과 기록, 인쇄 확인 |
+| 2026-11-09 | 배포본 확인 | 사용자 확인: 배포 빌드는 `24b717d` 이후 `main`, check_windows 통과, ZIP에 GUI·`cpm` 포함 | Python 없는 PC 실행, 인쇄 확인 |
 
 ### 1단계 검증 범위와 한계
 

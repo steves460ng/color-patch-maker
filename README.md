@@ -85,7 +85,7 @@ PDF를 만드는 동안에도 화면은 멈추지 않습니다. 끝나면 만들
 
 ## 명령줄로 쓰기
 
-반복 작업에는 같은 기능을 명령줄 프로그램 `cpm.exe`로도 쓸 수 있습니다. `cpm.exe`는 [Windows 빌드 안내](docs/BUILD_WINDOWS.md)를 따라 만들면 `dist\cpm` 폴더에 생깁니다.
+반복 작업에는 같은 기능을 명령줄 프로그램 `cpm.exe`로도 쓸 수 있습니다. `cpm.exe`는 내려받은 ZIP에 함께 들어 있습니다.
 
 ```powershell
 cpm.exe grid --cmyk 40 70 20 0 --channels CM --step 1 --cols 7 --rows 7 --out-dir output
@@ -105,7 +105,7 @@ Windows 10/11 x64용입니다. 설치 과정 없이 압축만 풀어서 실행�
 
 1. [ColorPatchMaker.zip 내려받기](https://drive.google.com/file/d/1jVFRYr7_GB6gT_6guhcR8KIbclYbl9Ag/view?usp=sharing) (Google Drive, 약 87MB)
 2. 압축을 원하는 위치에 풉니다.
-3. 압축을 푼 폴더에서 `ColorPatchMaker.exe`를 실행합니다.
+3. 압축을 푼 폴더에서 `ColorPatchMaker.exe`를 실행합니다. 명령줄 프로그램 `cpm.exe`도 함께 들어 있습니다.
 
 - 실행 파일만 따로 옮기지 마세요. 같은 폴더의 `_internal` 폴더가 함께 있어야 실행됩니다. 옮길 때는 폴더째 옮깁니다.
 - 서명하지 않은 프로그램이라 처음 실행할 때 Windows에서 "Windows의 PC 보호" 경고가 나올 수 있습니다. **추가 정보 → 실행**을 누르면 됩니다. 회사 PC에서 막히면 관리자에게 문의하세요.
