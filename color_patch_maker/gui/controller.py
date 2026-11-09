@@ -3,6 +3,7 @@ from PySide6.QtCore import QSignalBlocker
 from PySide6.QtWidgets import QWidget, QLineEdit
 from color_patch_maker.engine import input_errors, layout, output_names
 from .preview import screen_color
+from .output import OutputController
 
 
 class Controller:
@@ -22,6 +23,7 @@ class Controller:
         for name, prefix in [('use_as_base_button','grid_cmyk'),('use_as_start_button','ramp_start'),('use_as_end_button','ramp_end')]:
             self.widget(name).clicked.connect(lambda checked=False, p=prefix: self.apply_selection(p))
         self.refresh()
+        self.output = OutputController(self)
 
     def widget(self, name):
         return self.window.findChild(QWidget, name)
@@ -48,12 +50,16 @@ class Controller:
         return mode, args, mapping
 
     def refresh(self, *_):
+        if hasattr(self, 'output'):
+            if self.output.busy:
+                return
+            self.output.clear_status()
         self.document = None
         self.page_index = 0
         self.select(None)
         for field in self.window.sidebar.findChildren(QLineEdit):
             error = self.widget(field.objectName()+'_error')
-            if error is not None:
+            if error is not None and field.objectName() != 'output_folder':
                 error.setText('')
                 field.setStyleSheet('')
         mode, args, mapping = self.inputs()
@@ -61,7 +67,9 @@ class Controller:
         for key, message in errors.items():
             field = self.widget(mapping[key])
             field.setStyleSheet('border: 1px solid #b3261e;')
-            self.widget(mapping[key]+'_error').setText(message)
+            compact = '0~100 정수' if key.startswith(('cmyk.', 'start.', 'end.')) else message
+            self.widget(mapping[key]+'_error').setText(compact)
+            self.widget(mapping[key]+'_error').setToolTip(message)
         problem = '입력값을 확인하세요' if errors else None
         if not errors:
             try:
@@ -69,7 +77,7 @@ class Controller:
             except ValueError as exc:
                 problem = str(exc)
         if self.document is None:
-            for name in ['summary_patch_count','summary_pdf_count','summary_patch_size','filename_preview','layout_summary','paper_info']:
+            for name in ['summary_patch_count','summary_pdf_count','summary_patch_size','filename_preview']:
                 self.widget(name).setText('–')
             self.widget('warning_list').setText(problem)
         else:
@@ -89,7 +97,21 @@ class Controller:
             if len(d['pages']) > 1:
                 notices.append(f"한 장에 다 들어가지 않아 단일 페이지 PDF {len(d['pages'])}개로 나눕니다")
             self.widget('warning_list').setText('\n'.join(notices) or '없음')
+        layout_keys = ('paper.', 'margin', 'gap', 'patch_size')
+        if not any(key.startswith(layout_keys) for key in errors):
+            paper = '×'.join(f'{float(v):g}' for v in args['paper'])
+            size = '자동' if args['patch_size'] is None else f"{float(args['patch_size']):g}mm"
+            self.widget('layout_summary').setText(f"{paper} · 여백 {float(args['margin']):g} · {size}")
+            self.widget('paper_info').setText(f'{paper}mm · DeviceCMYK')
+        else:
+            self.widget('layout_summary').setText('–')
+            self.widget('paper_info').setText('–')
+        if self.window.restore_notice:
+            self.widget('warning_list').setText(self.widget('warning_list').text()+'\n'+self.window.restore_notice)
+            self.window.restore_notice = ''
         self.show_page()
+        if hasattr(self, 'output'):
+            self.output.update()
 
     def show_page(self):
         count = len(self.document['pages']) if self.document else 0

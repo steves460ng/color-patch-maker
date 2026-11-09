@@ -1,4 +1,6 @@
 """Main window composition and input/preview controller."""
+from PySide6.QtCore import QSettings
+from .settings import restore, save
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from .sidebar import Sidebar, named
 from .preview import Preview
@@ -6,7 +8,7 @@ from .controller import Controller
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, settings=None):
         super().__init__()
         self.setObjectName('main_window')
         self.setWindowTitle('Color Patch Maker')
@@ -39,4 +41,14 @@ class MainWindow(QMainWindow):
             QScrollArea { border: none; }
             QPushButton { min-height: 28px; }
         ''')
+        self.settings = settings if settings is not None else QSettings('ColorPatchMaker', 'ColorPatchMaker')
+        self.restore_notice = restore(self, self.settings)
         self.controller = Controller(self)
+
+    def closeEvent(self, event):
+        if self.controller.output.busy:
+            self.controller.output.status('PDF 작업이 끝난 뒤 창을 닫아 주세요.')
+            event.ignore()
+            return
+        save(self, self.settings)
+        event.accept()

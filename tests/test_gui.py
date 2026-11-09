@@ -38,7 +38,7 @@ def test_window_and_named_widgets(window):
         assert window.findChild(QLabel,name+'_error').text() == ''
     for name in ['paper_info','mode_tabs','grid_panel','ramp_panel','grid_channels','layout_toggle','layout_fields','layout_summary','selected_swatch','selected_id','selected_cmyk','selection_hint','warning_list','summary_patch_count','summary_pdf_count','summary_patch_size','output_folder','filename_preview','output_status','paper_placeholder','page_indicator','screen_color_note']:
         assert window.findChild(QWidget,name) is not None, name
-    for name in ['make_pdf_button','browse_button','use_as_base_button','use_as_start_button','use_as_end_button','previous_page_button','next_page_button']:
+    for name in ['make_pdf_button','use_as_base_button','use_as_start_button','use_as_end_button','previous_page_button','next_page_button']:
         assert not window.findChild(QPushButton,name).isEnabled()
     for name in ['summary_patch_count','summary_pdf_count','summary_patch_size','filename_preview']:
         assert window.findChild(QLabel,name).text() != '–'

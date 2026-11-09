@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
     QComboBox, QPushButton, QToolButton, QTabBar, QScrollArea, QGroupBox,
-    QSizePolicy, QStackedWidget,
+    QSizePolicy, QStackedWidget, QPlainTextEdit,
 )
 
 
@@ -57,6 +57,21 @@ class StableStack(QStackedWidget):
         if self.count() and self.width() > 0:
             hint.setHeight(max(hint.height(), self.heightForWidth(self.width())))
         return hint
+
+
+class StatusText(QPlainTextEdit):
+    """Bounded result area so long output lists cannot enlarge the main window."""
+    def __init__(self):
+        super().__init__()
+        self.setReadOnly(True)
+        self.setFixedHeight(72)
+        self.setObjectName('output_status')
+
+    def setText(self, text):
+        self.setPlainText(text)
+
+    def text(self):
+        return self.toPlainText()
 
 
 class Sidebar(QWidget):
@@ -142,6 +157,8 @@ class Sidebar(QWidget):
         text = QHBoxLayout()
         text.addWidget(label('–', 'selected_id'))
         text.addWidget(label('–', 'selected_cmyk'))
+        text.setSpacing(6)
+        text.addStretch()
         selected_row.addLayout(text, 1)
         picked_layout.addLayout(selected_row)
         picked_layout.addWidget(label('미리보기에서 패치를 선택하세요.', 'selection_hint'))
@@ -184,11 +201,15 @@ class Sidebar(QWidget):
         folder_row.addWidget(folder, 1)
         folder_row.addWidget(button('찾기', 'browse_button'))
         foot.addLayout(folder_row)
+        foot.addWidget(ErrorLabel('output_folder_error'))
         foot.addWidget(label('–', 'filename_preview'))
         foot.addWidget(button('PDF 만들기', 'make_pdf_button'))
-        status = label('', 'output_status')
-        status.setMinimumHeight(18)
+        status = StatusText()
+        status.hide()
         foot.addWidget(status)
+        open_folder = button('폴더 열기', 'open_folder_button')
+        open_folder.hide()
+        foot.addWidget(open_folder)
         outer.addWidget(footer)
         self.tabs.currentChanged.connect(self.set_mode)
         self.set_mode(0)
