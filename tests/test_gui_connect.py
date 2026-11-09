@@ -134,7 +134,7 @@ def test_tab_memory_and_shared_paper(window,app):
 
 def test_engine_has_no_qt_imports():
     for path in Path('color_patch_maker/engine').glob('*.py'):
-        for node in ast.walk(ast.parse(path.read_text())):
+        for node in ast.walk(ast.parse(path.read_text(encoding='utf-8'))):
             names=[n.name for n in node.names] if isinstance(node,ast.Import) else [node.module or ''] if isinstance(node,ast.ImportFrom) else []
             assert not any('PySide' in n or 'PyQt' in n for n in names)
 
