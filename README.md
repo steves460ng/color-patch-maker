@@ -9,6 +9,10 @@
 </p>
 
 <p align="center">
+  <a href="https://drive.google.com/file/d/1jVFRYr7_GB6gT_6guhcR8KIbclYbl9Ag/view?usp=sharing"><b>Windows용 내려받기</b></a> · Windows 10/11 x64 · ZIP 약 87MB
+</p>
+
+<p align="center">
   <img src="docs/ui/screens/1600x900-selected.png" width="100%" alt="Color Patch Maker 화면: 왼쪽에 설정, 오른쪽에 7×7 패치 미리보기">
 </p>
 
@@ -77,7 +81,7 @@ PDF를 만드는 동안에도 화면은 멈추지 않습니다. 끝나면 만들
 
 ## 명령줄로 쓰기
 
-반복 작업에는 같은 기능을 명령줄 프로그램 `cpm.exe`로도 쓸 수 있습니다.
+반복 작업에는 같은 기능을 명령줄 프로그램 `cpm.exe`로도 쓸 수 있습니다. `cpm.exe`는 [Windows 빌드 안내](docs/BUILD_WINDOWS.md)를 따라 만들면 `dist\cpm` 폴더에 생깁니다.
 
 ```powershell
 cpm.exe grid --cmyk 40 70 20 0 --channels CM --step 1 --cols 7 --rows 7 --out-dir output
@@ -85,9 +89,18 @@ cpm.exe ramp --from 40 70 20 0 --to 30 75 30 5 --count 11 --out-dir output
 cpm.exe verify output\C40_M70_Y20_K0_CM_s1.pdf output\C40_M70_Y20_K0_CM_s1.json
 ```
 
-## 설치
+## 내려받기와 설치
 
-Windows 10/11 x64용입니다. 아직 내려받을 수 있는 배포 파일은 없으며, [Windows 빌드 안내](docs/BUILD_WINDOWS.md)를 따라 실행 파일을 만듭니다. 만들어진 `ColorPatchMaker` 폴더(화면용)와 `cpm` 폴더(명령줄용)를 통째로 옮기면 Python이 없는 PC에서도 실행됩니다.
+Windows 10/11 x64용입니다. 설치 과정 없이 압축만 풀어서 실행합니다.
+
+1. [ColorPatchMaker.zip 내려받기](https://drive.google.com/file/d/1jVFRYr7_GB6gT_6guhcR8KIbclYbl9Ag/view?usp=sharing) (Google Drive, 약 87MB)
+2. 압축을 원하는 위치에 풉니다.
+3. 압축을 푼 폴더에서 `ColorPatchMaker.exe`를 실행합니다.
+
+- 실행 파일만 따로 옮기지 마세요. 같은 폴더의 `_internal` 폴더가 함께 있어야 실행됩니다. 옮길 때는 폴더째 옮깁니다.
+- 서명하지 않은 프로그램이라 처음 실행할 때 Windows에서 "Windows의 PC 보호" 경고가 나올 수 있습니다. **추가 정보 → 실행**을 누르면 됩니다. 회사 PC에서 막히면 관리자에게 문의하세요.
+- Python을 따로 설치하지 않아도 됩니다.
+- 직접 빌드하려면 [Windows 빌드 안내](docs/BUILD_WINDOWS.md)를 따릅니다.
 
 ## 알아 두세요
 
