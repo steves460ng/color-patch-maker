@@ -3,7 +3,7 @@ import copy
 import errno
 from pathlib import Path
 from PySide6.QtCore import QThread, QUrl
-from PySide6.QtGui import QDesktopServices, QShortcut, QKeySequence
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileDialog
 from color_patch_maker.engine.pdf import export, preview_paths
 
@@ -48,19 +48,16 @@ class OutputController:
         self.widget('output_folder').textChanged.connect(self.folder_changed)
         self.widget('make_pdf_button').clicked.connect(self.start)
         self.widget('open_folder_button').clicked.connect(self.open_folder)
-        self.shortcuts = [QShortcut(QKeySequence(key), self.window) for key in ('Return','Enter')]
-        for shortcut in self.shortcuts:
-            shortcut.activated.connect(self.start)
         self.update()
 
     def status(self, text):
         self.widget('output_status').setText(text)
-        self.widget('output_status').setVisible(bool(text))
+        self.widget('notice_stack').setCurrentIndex(1 if text else 0)
 
     def clear_status(self):
         if not self.busy:
             self.status('')
-            self.widget('open_folder_button').hide()
+            self.widget('open_folder_button').setEnabled(False)
             self.completed_folder = None
 
     def folder_changed(self):
@@ -121,7 +118,7 @@ class OutputController:
             names = [Path(p).name for p in thread.files if p.endswith('.pdf')]
             self.status('역검사 통과\n'+'\n'.join(names))
             self.widget('open_folder_button').setEnabled(True)
-            self.widget('open_folder_button').show()
+
         self.update()
         self.thread = None
         thread.deleteLater()

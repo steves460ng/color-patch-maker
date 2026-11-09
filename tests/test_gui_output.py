@@ -91,10 +91,10 @@ def test_collision_output_and_cli(window,tmp_path,split,mode):
     gui_json=[p for p in predicted if p.endswith('.json')]
     assert [json.loads(Path(p).read_text())['patches'] for p in gui_json]==[json.loads(Path(p).read_text())['patches'] for p in cli_json]
     value(window,'grid_step',2)
-    assert not wid(window,'output_status').isVisible() and not wid(window,'open_folder_button').isVisible()
+    assert not wid(window,'output_status').isVisible() and not wid(window,'open_folder_button').isEnabled()
 
 
-def test_worker_snapshot_lock_close_and_enter(window,tmp_path,monkeypatch):
+def test_worker_snapshot_lock_close(window,tmp_path,monkeypatch):
     gate=threading.Event();started=threading.Event();seen=[]
     original=output.export
     def delayed(document,folder):
@@ -104,7 +104,7 @@ def test_worker_snapshot_lock_close_and_enter(window,tmp_path,monkeypatch):
     monkeypatch.setattr(output,'export',delayed)
     value(window,'output_folder',tmp_path)
     snapshot=copy.deepcopy(window.controller.document)
-    QTest.keyClick(wid(window,'grid_cmyk_c'),Qt.Key.Key_Return)
+    wid(window,'make_pdf_button').click()
     wait_until(started.is_set)
     try:
         assert window.controller.output.busy
@@ -196,3 +196,49 @@ def test_open_folder(window,tmp_path,monkeypatch):
     wait_until(lambda:not window.controller.output.busy)
     wid(window,'open_folder_button').click()
     assert calls==[str(tmp_path)]
+
+
+@pytest.mark.parametrize('tab',[0,1])
+@pytest.mark.parametrize('state',['default','invalid','generating','completed','failure'])
+@pytest.mark.parametrize('family',['DejaVu Sans','Noto Sans CJK KR'])
+def test_notice_clearance_in_all_states(window,app,tmp_path,tab,state,family):
+    from PySide6.QtGui import QFont
+    window.setFont(QFont(family,10))
+    window.resize(1024,720)
+    window.sidebar.tabs.setCurrentIndex(tab)
+    if state not in ('default','invalid'):
+        value(window,'output_folder',tmp_path)
+    app.processEvents();QTest.qWait(30)
+    footer=wid(window,'output_footer')
+    base_height=footer.height()
+    if state=='invalid':
+        value(window,('grid_cmyk' if tab==0 else 'ramp_start')+'_c','40.5')
+    elif state=='generating':
+        window.controller.output.lock(True)
+        window.controller.output.status('PDF 생성 및 역검사 중입니다…')
+    elif state=='completed':
+        window.controller.output.status('역검사 통과\n'+'\n'.join(f'chart_{i:02}.pdf' for i in range(1,101)))
+        wid(window,'open_folder_button').setEnabled(True)
+    elif state=='failure':
+        window.controller.output.status('저장 폴더 쓰기 권한이 없습니다. 다른 폴더를 선택하세요.')
+    app.processEvents();QTest.qWait(30)
+    panel=wid(window,'warnings_panel');viewport=window.sidebar.scroll.viewport()
+    rect=panel.rect().translated(panel.mapTo(viewport,panel.rect().topLeft()))
+    assert viewport.rect().contains(rect)
+    assert viewport.height()-rect.bottom()-1 >= 16
+    assert window.sidebar.scroll.verticalScrollBar().value()==0
+    assert footer.height()==base_height
+    assert (window.width(),window.height())==(1024,720)
+    if state=='completed':
+        assert wid(window,'output_status').verticalScrollBar().maximum()>0
+
+
+@pytest.mark.parametrize('key',[Qt.Key.Key_Return,Qt.Key.Key_Enter])
+def test_enter_does_not_export(window,tmp_path,key):
+    value(window,'output_folder',tmp_path)
+    assert wid(window,'make_pdf_button').isEnabled()
+    wid(window,'grid_cmyk_c').setFocus()
+    QTest.keyClick(wid(window,'grid_cmyk_c'),key)
+    QTest.qWait(50)
+    assert not window.controller.output.busy
+    assert not list(tmp_path.glob('*.pdf'))

@@ -128,6 +128,7 @@ class Controller:
 
     def select(self, patch):
         self.selected = patch
+        self.widget('selection_details').setCurrentIndex(1 if patch else 0)
         paper = self.window.preview.paper
         paper.selected_id = patch['id'] if patch else None
         paper.update()
