@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QWidget, QLineEdit
 from color_patch_maker.engine import input_errors, layout, output_names
 from .preview import screen_color
 from .output import OutputController
+from .templates import TemplateController
 
 
 class Controller:
@@ -22,6 +23,7 @@ class Controller:
         window.preview.paper.patch_clicked.connect(self.select)
         for name, prefix in [('use_as_base_button','grid_cmyk'),('use_as_start_button','ramp_start'),('use_as_end_button','ramp_end')]:
             self.widget(name).clicked.connect(lambda checked=False, p=prefix: self.apply_selection(p))
+        self.templates = TemplateController(self)
         self.refresh()
         self.output = OutputController(self)
 
@@ -106,6 +108,7 @@ class Controller:
         else:
             self.widget('layout_summary').setText('–')
             self.widget('paper_info').setText('–')
+        self.templates.update()
         if self.window.restore_notice:
             self.widget('warning_list').setText(self.widget('warning_list').text()+'\n'+self.window.restore_notice)
             self.window.restore_notice = ''

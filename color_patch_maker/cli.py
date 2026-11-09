@@ -2,7 +2,7 @@
 import argparse
 import json
 import sys
-from color_patch_maker.engine import layout
+from color_patch_maker.engine import layout, template_values
 from color_patch_maker.engine.pdf import export, verify
 
 
@@ -11,9 +11,10 @@ def main(argv=None):
     commands = parser.add_subparsers(dest='command', required=True)
     for mode in ('grid', 'ramp'):
         p = commands.add_parser(mode)
-        p.add_argument('--paper', nargs=2, default=[305, 505])
-        p.add_argument('--margin', default=20)
-        p.add_argument('--gap', default=3)
+        p.add_argument('--template', default='default', help='기본, 카드 (별칭: default, card)')
+        p.add_argument('--paper', nargs=2)
+        p.add_argument('--margin')
+        p.add_argument('--gap')
         p.add_argument('--patch-size')
         p.add_argument('--cols')
         p.add_argument('--out-dir', default='output')
@@ -37,6 +38,10 @@ def main(argv=None):
             result = {'verified': True}
         else:
             out_dir = args.pop('out_dir')
+            defaults = template_values(args.pop('template'))
+            for key, value in defaults.items():
+                if args[key] is None:
+                    args[key] = value
             document = layout(command, **args)
             for warning in document['warnings']:
                 print(warning, file=sys.stderr)

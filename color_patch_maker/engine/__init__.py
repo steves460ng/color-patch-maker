@@ -1,4 +1,6 @@
 """GUI-independent patch and layout engine; coordinates use bottom-left mm."""
+from .templates import template_names, template_values, validate_template
+
 import math
 import re
 

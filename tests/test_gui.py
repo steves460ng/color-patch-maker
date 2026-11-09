@@ -82,7 +82,7 @@ def test_geometry_and_fixed_regions(window,app,size,mode):
 
 def test_tab_order_and_raw_input(window,app):
     window.sidebar.layout_toggle.setChecked(True);app.processEvents()
-    fields=['grid_cmyk_c','grid_cmyk_m','grid_cmyk_y','grid_cmyk_k','grid_channels','grid_step','grid_cols','grid_rows','layout_toggle','layout_width','layout_height','layout_margin','layout_gap','layout_patch_size','output_folder']
+    fields=['grid_cmyk_c','grid_cmyk_m','grid_cmyk_y','grid_cmyk_k','grid_channels','grid_step','grid_cols','grid_rows','layout_toggle','layout_template','save_template_button','reset_layout_button','layout_width','layout_height','layout_margin','layout_gap','layout_patch_size','output_folder']
     window.findChild(QWidget,fields[0]).setFocus()
     for name in fields:
         assert app.focusWidget().objectName()==name

@@ -30,7 +30,7 @@ class MainWindow(QMainWindow):
         header = QHBoxLayout()
         header.addWidget(QLabel('Color Patch Maker'))
         header.addStretch()
-        header.addWidget(named(QLabel('305×505mm · DeviceCMYK'), 'paper_info'))
+        header.addWidget(named(QLabel('–'), 'paper_info'))
         box.addLayout(header)
         columns = QHBoxLayout()
         columns.setSpacing(12)

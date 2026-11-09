@@ -3,7 +3,7 @@ from PySide6.QtCore import QRectF, Qt, Signal
 from PySide6.QtGui import QColor, QPainter, QPen, QFont
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from .sidebar import named, label, button
-from color_patch_maker.engine import page_header
+from color_patch_maker.engine import page_header, template_values
 
 
 def screen_color(values):
@@ -23,7 +23,7 @@ class PaperPlaceholder(QWidget):
         self.selected_id = None
 
     def paper_rect(self):
-        pw, ph = self.document['paper_mm'] if self.document else (305, 505)
+        pw, ph = self.document['paper_mm'] if self.document else template_values('default')['paper']
         height = min(max(0, self.height()-32), max(0, self.width()-32)*ph/pw)
         width = height*pw/ph
         return QRectF((self.width()-width)/2, (self.height()-height)/2, width, height)

@@ -24,7 +24,7 @@ def wait_for(predicate):
 
 with TemporaryDirectory() as temp:
     for width,height in [(1024,720),(1600,900)]:
-        for state in ['grid','clamped','invalid','split','ramp','selected','generating','completed','failure']:
+        for state in ['grid','clamped','invalid','split','ramp','selected','generating','completed','failure','templates','card']:
             root=Path(temp)/f'{width}-{state}';root.mkdir()
             window=MainWindow(QSettings(str(root/'settings.ini'),QSettings.Format.IniFormat))
             window.resize(width,height);window.show()
@@ -36,6 +36,16 @@ with TemporaryDirectory() as temp:
                 field('layout_patch_size',60)
                 window.findChild(QWidget,'next_page_button').click()
             elif state=='ramp':window.sidebar.tabs.setCurrentIndex(1)
+            elif state in ('templates','card'):
+                combo=window.findChild(QWidget,'layout_template')
+                combo.setCurrentText('카드')
+                combo.activated.emit(combo.currentIndex())
+                if state=='templates':
+                    window.sidebar.layout_toggle.setChecked(True)
+                    app.processEvents()
+                    window.sidebar.scroll.ensureWidgetVisible(combo)
+                else:
+                    window.findChild(QWidget,'next_page_button').click()
             app.processEvents();QTest.qWait(40)
             if state=='selected':
                 paper=window.preview.paper
