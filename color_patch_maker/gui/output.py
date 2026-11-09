@@ -1,4 +1,5 @@
 """Background export and output controls. File policy stays in the engine."""
+from color_patch_maker.engine.messages import t
 import copy
 import errno
 from pathlib import Path
@@ -10,14 +11,14 @@ from color_patch_maker.engine.pdf import export, preview_paths
 
 def failure_message(error):
     if isinstance(error, PermissionError):
-        return '저장 폴더 쓰기 권한이 없습니다. 다른 폴더를 선택하세요.'
+        return t('output.permission')
     if isinstance(error, OSError) and error.errno == errno.ENOSPC:
-        return '디스크 공간이 부족합니다. 공간을 확보한 뒤 다시 시도하세요.'
+        return t('output.disk_full')
     if isinstance(error, FileNotFoundError):
-        return '저장 폴더를 찾을 수 없습니다. 폴더를 다시 선택하세요.'
+        return t('output.folder_missing')
     if isinstance(error, ValueError):
-        return f'PDF 생성·역검사에 실패했습니다: {error}'
-    return f'PDF를 저장하지 못했습니다. 폴더와 저장 장치를 확인하세요: {error}'
+        return t('output.verify_failure', error=error)
+    return t('output.failure', error=error)
 
 
 class ExportThread(QThread):
@@ -68,22 +69,22 @@ class OutputController:
         folder = self.widget('output_folder').text()
         error = ''
         if not folder:
-            error = '저장 폴더를 선택하세요.'
+            error = t('output.folder_required')
         elif not Path(folder).is_dir():
-            error = '존재하는 폴더를 선택하세요.'
+            error = t('output.folder_invalid')
         self.widget('output_folder_error').setText(error)
         document = self.controller.document
         if document and not error:
             try:
                 names = [Path(p).name for p in preview_paths(document,folder) if p.endswith('.pdf')]
-                self.widget('filename_preview').setText(names[0] if len(names)==1 else f'{names[0]} … {names[-1]}')
+                self.widget('filename_preview').setText(names[0] if len(names)==1 else t('output.filename_range', first=names[0], last=names[-1]))
             except OSError as exc:
                 error = failure_message(exc)
                 self.widget('output_folder_error').setText(error)
         self.widget('make_pdf_button').setEnabled(bool(document and not error and not self.busy))
 
     def browse(self):
-        folder = QFileDialog.getExistingDirectory(self.window,'저장 폴더 선택',self.widget('output_folder').text())
+        folder = QFileDialog.getExistingDirectory(self.window,t('output.choose_folder'),self.widget('output_folder').text())
         if folder:
             self.widget('output_folder').setText(folder)
 
@@ -97,7 +98,7 @@ class OutputController:
         self.busy = True
         self.thread = ExportThread(self.controller.document, self.widget('output_folder').text(), self.window)
         self.lock(True)
-        self.status('PDF 생성 및 역검사 중입니다…')
+        self.status(t('output.busy'))
         self.thread.finished.connect(self.finished)
         self.thread.start()
 
@@ -116,7 +117,7 @@ class OutputController:
         else:
             self.completed_folder = thread.folder
             names = [Path(p).name for p in thread.files if p.endswith('.pdf')]
-            self.status('역검사 통과\n'+'\n'.join(names))
+            self.status(t('output.success', names='\n'.join(names)))
             self.widget('open_folder_button').setEnabled(True)
 
         self.update()
@@ -126,4 +127,4 @@ class OutputController:
     def open_folder(self):
         if self.completed_folder:
             if not QDesktopServices.openUrl(QUrl.fromLocalFile(str(Path(self.completed_folder).resolve()))):
-                self.status('폴더를 열지 못했습니다. 파일 탐색기에서 저장 폴더를 확인하세요.')
+                self.status(t('output.open_failed'))

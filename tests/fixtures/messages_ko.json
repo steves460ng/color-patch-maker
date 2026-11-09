@@ -1,0 +1,371 @@
+[
+  {
+    "code": "input.integer",
+    "function": "integer",
+    "args": [
+      "40.5",
+      "C"
+    ],
+    "kwargs": {},
+    "text": "C: 인쇄기는 정수값만 출력합니다. 정수를 입력하세요."
+  },
+  {
+    "code": "input.integer",
+    "function": "integer",
+    "args": [
+      "40.0",
+      "C"
+    ],
+    "kwargs": {},
+    "text": "C: 인쇄기는 정수값만 출력합니다. 정수를 입력하세요."
+  },
+  {
+    "code": "input.integer",
+    "function": "integer",
+    "args": [
+      "",
+      "C"
+    ],
+    "kwargs": {},
+    "text": "C: 인쇄기는 정수값만 출력합니다. 정수를 입력하세요."
+  },
+  {
+    "code": "input.integer",
+    "function": "integer",
+    "args": [
+      "abc",
+      "C"
+    ],
+    "kwargs": {},
+    "text": "C: 인쇄기는 정수값만 출력합니다. 정수를 입력하세요."
+  },
+  {
+    "code": "input.range",
+    "function": "integer",
+    "args": [
+      101,
+      "C",
+      0,
+      100
+    ],
+    "kwargs": {},
+    "text": "C: 0 이상 100 이하로 입력하세요."
+  },
+  {
+    "code": "input.range",
+    "function": "integer",
+    "args": [
+      -1,
+      "C",
+      0,
+      100
+    ],
+    "kwargs": {},
+    "text": "C: 0 이상 100 이하로 입력하세요."
+  },
+  {
+    "code": "input.color_count",
+    "function": "color",
+    "args": [
+      [
+        1,
+        2,
+        3
+      ]
+    ],
+    "kwargs": {},
+    "text": "CMYK: 네 값을 입력하세요."
+  },
+  {
+    "code": "input.number",
+    "function": "number",
+    "args": [
+      "abc",
+      "margin"
+    ],
+    "kwargs": {},
+    "text": "margin: 숫자로 된 0 이상의 mm 값을 입력하세요."
+  },
+  {
+    "code": "input.finite",
+    "function": "number",
+    "args": [
+      "inf",
+      "gap"
+    ],
+    "kwargs": {},
+    "text": "gap: 유한한 0 이상의 mm 값을 입력하세요."
+  },
+  {
+    "code": "input.mode",
+    "function": "layout",
+    "args": [
+      "bad"
+    ],
+    "kwargs": {},
+    "text": "방식은 grid 또는 ramp여야 합니다."
+  },
+  {
+    "code": "input.paper_count",
+    "function": "layout",
+    "args": [
+      "grid"
+    ],
+    "kwargs": {
+      "cmyk": [
+        40,
+        70,
+        20,
+        0
+      ],
+      "paper": [
+        305
+      ]
+    },
+    "text": "paper: 폭과 높이를 입력하세요."
+  },
+  {
+    "code": "input.minimum",
+    "function": "layout",
+    "args": [
+      "grid"
+    ],
+    "kwargs": {
+      "cmyk": [
+        40,
+        70,
+        20,
+        0
+      ],
+      "cols": 0
+    },
+    "text": "cols: 1 이상로 입력하세요."
+  },
+  {
+    "code": "input.minimum",
+    "function": "layout",
+    "args": [
+      "grid"
+    ],
+    "kwargs": {
+      "cmyk": [
+        40,
+        70,
+        20,
+        0
+      ],
+      "rows": 0
+    },
+    "text": "rows: 1 이상로 입력하세요."
+  },
+  {
+    "code": "input.minimum",
+    "function": "layout",
+    "args": [
+      "grid"
+    ],
+    "kwargs": {
+      "cmyk": [
+        40,
+        70,
+        20,
+        0
+      ],
+      "step": 0
+    },
+    "text": "step: 1 이상로 입력하세요."
+  },
+  {
+    "code": "input.channels",
+    "function": "layout",
+    "args": [
+      "grid"
+    ],
+    "kwargs": {
+      "cmyk": [
+        40,
+        70,
+        20,
+        0
+      ],
+      "channels": "CC"
+    },
+    "text": "channels: CM, CY, CK, MY, MK, YK 중 선택하세요."
+  },
+  {
+    "code": "layout.paper_space",
+    "function": "layout",
+    "args": [
+      "grid"
+    ],
+    "kwargs": {
+      "cmyk": [
+        40,
+        70,
+        20,
+        0
+      ],
+      "paper": [
+        10,
+        10
+      ]
+    },
+    "text": "paper/margin: 패치 공간이 없습니다. 용지를 키우거나 여백을 줄이세요."
+  },
+  {
+    "code": "layout.auto_small",
+    "function": "layout",
+    "args": [
+      "grid"
+    ],
+    "kwargs": {
+      "cmyk": [
+        40,
+        70,
+        20,
+        0
+      ],
+      "cols": 100
+    },
+    "text": "patch-size: 자동 크기가 5mm 미만입니다. 패치 크기를 지정하세요."
+  },
+  {
+    "code": "layout.patch_fit",
+    "function": "layout",
+    "args": [
+      "grid"
+    ],
+    "kwargs": {
+      "cmyk": [
+        40,
+        70,
+        20,
+        0
+      ],
+      "patch_size": 500
+    },
+    "text": "patch-size: 패치가 용지에 들어가지 않습니다. 크기를 줄이세요."
+  },
+  {
+    "code": "layout.label_size",
+    "function": "layout",
+    "args": [
+      "grid"
+    ],
+    "kwargs": {
+      "cmyk": [
+        40,
+        70,
+        20,
+        0
+      ],
+      "patch_size": 10
+    },
+    "text": "라벨: 최소 4.5pt를 확보할 수 없습니다. 패치 크기를 키우거나 칸 수를 줄이세요."
+  },
+  {
+    "code": "input.identical_endpoints",
+    "function": "layout",
+    "args": [
+      "ramp"
+    ],
+    "kwargs": {
+      "start": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "end": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "count": 2
+    },
+    "text": "from/to: 서로 다른 시작·끝 값을 입력하세요."
+  },
+  {
+    "code": "input.minimum",
+    "function": "layout",
+    "args": [
+      "ramp"
+    ],
+    "kwargs": {
+      "start": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "end": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "count": 1
+    },
+    "text": "count: 2 이상로 입력하세요."
+  },
+  {
+    "code": "layout.columns",
+    "function": "layout",
+    "args": [
+      "ramp"
+    ],
+    "kwargs": {
+      "start": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "end": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "count": 10,
+      "cols": 10,
+      "patch_size": 60
+    },
+    "text": "cols: 최대 4칸으로 줄이세요."
+  },
+  {
+    "code": "template.unknown",
+    "function": "template_values",
+    "args": [
+      "bad"
+    ],
+    "kwargs": {},
+    "text": "템플릿: 기본, 카드, default, card 중 선택하세요."
+  },
+  {
+    "code": "template.fields",
+    "function": "validate_template",
+    "args": [
+      {}
+    ],
+    "kwargs": {},
+    "text": "템플릿: 용지, 여백, 간격, 패치 크기를 모두 입력하세요."
+  },
+  {
+    "code": "template.paper",
+    "function": "validate_template",
+    "args": [
+      {
+        "paper": [
+          1
+        ],
+        "margin": 2,
+        "gap": 1,
+        "patch_size": 18
+      }
+    ],
+    "kwargs": {},
+    "text": "템플릿: 용지 가로·세로 두 값이 필요합니다."
+  }
+]
