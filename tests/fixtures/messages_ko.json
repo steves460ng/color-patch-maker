@@ -139,7 +139,7 @@
       ],
       "cols": 0
     },
-    "text": "cols: 1 이상로 입력하세요."
+    "text": "cols: 1 이상으로 입력하세요."
   },
   {
     "code": "input.minimum",
@@ -156,7 +156,7 @@
       ],
       "rows": 0
     },
-    "text": "rows: 1 이상로 입력하세요."
+    "text": "rows: 1 이상으로 입력하세요."
   },
   {
     "code": "input.minimum",
@@ -173,7 +173,7 @@
       ],
       "step": 0
     },
-    "text": "step: 1 이상로 입력하세요."
+    "text": "step: 1 이상으로 입력하세요."
   },
   {
     "code": "input.channels",
@@ -307,7 +307,7 @@
       ],
       "count": 1
     },
-    "text": "count: 2 이상로 입력하세요."
+    "text": "count: 2 이상으로 입력하세요."
   },
   {
     "code": "layout.columns",

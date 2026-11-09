@@ -1,4 +1,5 @@
 """Capture GUI states with temporary settings/output; no real preferences touched."""
+import argparse
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from threading import Event
@@ -9,8 +10,11 @@ from color_patch_maker.gui.window import MainWindow
 import color_patch_maker.gui.output as output
 import color_patch_maker.engine.pdf as pdf
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--language', choices=['ko', 'en'], default='ko')
+language = parser.parse_args().language
 app = QApplication([])
-folder = Path('docs/ui/screens')
+folder = Path('docs/ui/screens') / ('en' if language=='en' else '')
 folder.mkdir(parents=True, exist_ok=True)
 for path in folder.glob('*.png'):
     path.unlink()
@@ -26,7 +30,9 @@ with TemporaryDirectory() as temp:
     for width,height in [(1024,720),(1600,900)]:
         for state in ['grid','clamped','invalid','split','ramp','selected','generating','completed','failure','templates','card']:
             root=Path(temp)/f'{width}-{state}';root.mkdir()
-            window=MainWindow(QSettings(str(root/'settings.ini'),QSettings.Format.IniFormat))
+            settings=QSettings(str(root/'settings.ini'),QSettings.Format.IniFormat)
+            settings.setValue('language',language)
+            window=MainWindow(settings)
             window.resize(width,height);window.show()
             def field(name,value):window.findChild(QWidget,name).setText(str(value))
             field('output_folder',root)
@@ -38,7 +44,7 @@ with TemporaryDirectory() as temp:
             elif state=='ramp':window.sidebar.tabs.setCurrentIndex(1)
             elif state in ('templates','card'):
                 combo=window.findChild(QWidget,'layout_template')
-                combo.setCurrentText('카드')
+                combo.setCurrentIndex(combo.findData('card'))
                 combo.activated.emit(combo.currentIndex())
                 if state=='templates':
                     window.sidebar.layout_toggle.setChecked(True)
@@ -62,7 +68,7 @@ with TemporaryDirectory() as temp:
                     output.export=delayed
                 elif state=='failure':
                     # Deterministic verification failure after writing output.
-                    def failed_verify(*args):raise ValueError('역검사 실패 확인용 오류')
+                    def failed_verify(*args):raise ValueError('역검사 실패 확인용 오류' if language=='ko' else 'Verification failure for capture')
                     pdf.verify=failed_verify
                 if state in ('generating','completed','failure'):
                     window.controller.output.start()

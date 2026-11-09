@@ -1,5 +1,6 @@
 """Translate widget values to engine arguments and display engine results."""
-from color_patch_maker.engine.messages import t, Message
+from .language import error_text
+from color_patch_maker.engine.messages import Message
 from PySide6.QtCore import QSignalBlocker
 from PySide6.QtWidgets import QWidget, QLineEdit
 from color_patch_maker.engine import input_errors, layout, output_names
@@ -11,6 +12,8 @@ from .templates import TemplateController
 class Controller:
     def __init__(self, window):
         self.window = window
+        self.t = self.window.t
+        self.language = self.window.language
         self.document = None
         self.page_index = 0
         self.selected = None
@@ -70,15 +73,15 @@ class Controller:
         for key, message in errors.items():
             field = self.widget(mapping[key])
             field.setStyleSheet('border: 1px solid #b3261e;')
-            compact = t('input.color_compact') if key.startswith(('cmyk.', 'start.', 'end.')) else message.render()
+            compact = self.t('input.color_compact') if key.startswith(('cmyk.', 'start.', 'end.')) else message.render(self.language)
             self.widget(mapping[key]+'_error').setText(compact)
-            self.widget(mapping[key]+'_error').setToolTip(message.render())
-        problem = t('preview.invalid') if errors else None
+            self.widget(mapping[key]+'_error').setToolTip(message.render(self.language))
+        problem = self.t('preview.invalid') if errors else None
         if not errors:
             try:
                 self.document = layout(mode, **args)
             except ValueError as exc:
-                problem = str(exc)
+                problem = error_text(exc, self.language)
         if self.document is None:
             for name in ['summary_patch_count','summary_pdf_count','summary_patch_size','filename_preview']:
                 self.widget(name).setText('–')
@@ -91,21 +94,21 @@ class Controller:
             self.widget('summary_patch_size').setText(f"{patches[0]['rect_mm'][2]:.1f}")
             settings = d['settings']
             paper = '×'.join(f'{v:g}' for v in d['paper_mm'])
-            size = t('layout.auto') if settings['patch_size'] is None else t('layout.size_mm', size=settings['patch_size'])
-            self.widget('layout_summary').setText(t('layout.summary', paper=paper, margin=settings['margin'], size=size))
-            self.widget('paper_info').setText(t('layout.paper_info', paper=paper))
+            size = self.t('layout.auto') if settings['patch_size'] is None else self.t('layout.size_mm', size=settings['patch_size'])
+            self.widget('layout_summary').setText(self.t('layout.summary', paper=paper, margin=settings['margin'], size=size))
+            self.widget('paper_info').setText(self.t('layout.paper_info', paper=paper))
             names = output_names(d)
-            self.widget('filename_preview').setText(names[0] if len(names)==1 else t('output.filename_range', first=names[0], last=names[-1]))
+            self.widget('filename_preview').setText(names[0] if len(names)==1 else self.t('output.filename_range', first=names[0], last=names[-1]))
             notices = list(d['warnings'])
             if len(d['pages']) > 1:
                 notices.append(Message('warning.split', count=len(d['pages'])))
-            self.widget('warning_list').setText('\n'.join(notice.render() for notice in notices) or t('notice.none'))
+            self.widget('warning_list').setText('\n'.join(notice.render(self.language) for notice in notices) or self.t('notice.none'))
         layout_keys = ('paper.', 'margin', 'gap', 'patch_size')
         if not any(key.startswith(layout_keys) for key in errors):
             paper = '×'.join(f'{float(v):g}' for v in args['paper'])
-            size = t('layout.auto') if args['patch_size'] is None else t('layout.size_mm', size=float(args['patch_size']))
-            self.widget('layout_summary').setText(t('layout.summary', paper=paper, margin=float(args['margin']), size=size))
-            self.widget('paper_info').setText(t('layout.paper_info', paper=paper))
+            size = self.t('layout.auto') if args['patch_size'] is None else self.t('layout.size_mm', size=float(args['patch_size']))
+            self.widget('layout_summary').setText(self.t('layout.summary', paper=paper, margin=float(args['margin']), size=size))
+            self.widget('paper_info').setText(self.t('layout.paper_info', paper=paper))
         else:
             self.widget('layout_summary').setText('–')
             self.widget('paper_info').setText('–')
@@ -120,7 +123,7 @@ class Controller:
     def show_page(self):
         count = len(self.document['pages']) if self.document else 0
         self.window.preview.paper.set_document(self.document, self.page_index)
-        self.widget('page_indicator').setText(t('preview.page', current=self.page_index+1, total=count) if count else t('preview.page_empty'))
+        self.widget('page_indicator').setText(self.t('preview.page', current=self.page_index+1, total=count) if count else self.t('preview.page_empty'))
         self.widget('previous_page_button').setEnabled(bool(count and self.page_index > 0))
         self.widget('next_page_button').setEnabled(bool(count and self.page_index < count-1))
 
@@ -140,7 +143,7 @@ class Controller:
         self.widget('selected_cmyk').setText(' '.join(f'{c}{v}' for c,v in zip('CMYK',patch['cmyk'])) if patch else '–')
         color = screen_color(patch['cmyk']).name() if patch else '#e5e7eb'
         self.widget('selected_swatch').setStyleSheet(f'background: {color}; border: 1px solid #c5cbd2;')
-        self.widget('selection_hint').setText(t('selection.ready') if patch else t('selection.empty'))
+        self.widget('selection_hint').setText(self.t('selection.ready') if patch else self.t('selection.empty'))
         for name in ['use_as_base_button','use_as_start_button','use_as_end_button']:
             self.widget(name).setEnabled(patch is not None)
 

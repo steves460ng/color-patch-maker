@@ -40,7 +40,7 @@ Windows에서는 `.venv/bin/` 대신 `.venv/Scripts/`를 사용합니다.
 | 함수 | 역할 |
 | --- | --- |
 | `template_names()` | 기본 제공 내부 식별자 목록(default, card)을 반환합니다. |
-| `template_label(id, language="ko")` | 문구 사전에서 표시 이름을 반환합니다. 현재는 한국어만 지원합니다. |
+| `template_label(id, language="ko")` | 문구 사전에서 표시 이름을 반환합니다. 한국어와 영어를 지원합니다. |
 | `template_id(name)` | default/card 또는 기존 한국어 표시 이름을 내부 식별자로 바꿉니다. |
 | `template_values(name)` | 기본 제공 레이아웃 사본을 반환합니다. default/card 별칭도 받으며 값은 engine/templates.py 한 곳에 정의합니다. |
 | `validate_template(values)` | 색·방식 입력 없이 기존 layout()의 1×1 검사로 레이아웃을 검증하고 정규화합니다. 실제 입력의 라벨·칸 수 제약은 layout()이 별도로 검사합니다. |
@@ -56,7 +56,8 @@ Windows에서는 `.venv/bin/` 대신 `.venv/Scripts/`를 사용합니다.
 
 ```sh
 QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/test_gui.py tests/test_gui_connect.py tests/test_gui_output.py -q
-QT_QPA_PLATFORM=offscreen .venv/bin/python scripts/capture_gui.py
+QT_QPA_PLATFORM=offscreen .venv/bin/python scripts/capture_gui.py --language ko
+QT_QPA_PLATFORM=offscreen .venv/bin/python scripts/capture_gui.py --language en
 ```
 
 캡처는 `docs/ui/screens/`에 저장됩니다.
@@ -90,13 +91,13 @@ QT_QPA_PLATFORM=offscreen CPM_OFFSCREEN_SMOKE_SETTINGS="$(mktemp -d)" ./dist/Col
 버전 1의 기존 PDF/매니페스트는 기존 검사를 유지하여 계속 확인할 수 있습니다. 새 출력은 항상 버전 2로 생성하고 알 수 없는 버전은 거부합니다. 카드 템플릿은 85.6×54mm, 여백 2mm, 간격 1mm, 패치 18mm입니다.
 
 
-## 문구 사전과 오류·경고 (2-6)
+## 문구 사전과 오류·경고 (2-6·2-7)
 
-사용자 문구는 `engine/messages.py`의 `KO` 사전 한 곳에 있습니다. 현재 **113개 키**이며 `CATALOGS`에는 `ko`만 있습니다. `t(key, language='ko', **values)`로 완성된 문장 틀에 값을 채웁니다. 없는 키·언어, 누락되거나 불필요한 인자는 KeyError로 즉시 드러납니다. 문장 일부를 붙이지 않고 범위 상한 유무 등은 별도 문장 틀로 둡니다. GUI 생성·갱신·대화 상자와 CLI의 앱 제공 도움말·오류 접두어가 같은 함수를 사용합니다. argparse가 제공하는 기본 도움말 형식은 그대로입니다.
+사용자 문구는 `engine/messages.py`의 `KO`·`EN` 사전에 있습니다. `CATALOGS`의 `ko`·`en`은 각각 **123개 키**로, 기존 113개와 언어 선택·저장된 이름 표시·대화 상자 버튼용 10개입니다. 두 언어의 키와 문장 인자가 정확히 같습니다. `t(key, language='ko', **values)`로 완성된 문장 틀에 값을 채웁니다. 없는 키·언어, 누락되거나 불필요한 인자는 KeyError로 즉시 드러납니다. 문장 일부를 붙이지 않고 범위 상한 유무 등은 별도 문장 틀로 둡니다. GUI 생성·갱신·대화 상자와 CLI의 앱 제공 도움말·오류 접두어가 같은 함수를 사용합니다. argparse가 제공하는 기본 도움말 형식은 그대로입니다.
 
 - `EngineError(ValueError)`: `code`(사전 키), `target`(입력/검사 대상), `value`(문제가 된 값), `values`(문장 인자)를 가집니다. `str(error)`는 기존 한국어 문장이며 `error.render(language)`로 언어를 명시할 수 있습니다.
-- `Message`: `code`, `values`를 담고 `render(language)`로 경고·안내를 표시합니다. layout()의 고정 경고는 Message 목록이며 GUI의 분할 안내도 같은 구조입니다. CLI에 새 분할 경고를 추가하지 않아 기존 표준 오류 출력을 유지합니다.
-- `input_errors()`는 칸 이름을 키로, EngineError를 값으로 반환합니다. target도 `cmyk.0` 같은 칸 키로 지정합니다. GUI는 `.render()`를 표시하고 CMYK 오류 칸에는 기존 짧은 문구를 씁니다.
+- `Message`: `code`, `values`를 담고 `render(language)`로 경고·안내를 표시합니다. layout()의 고정 경고는 Message 목록이며 GUI의 분할 안내도 같은 구조입니다. CLI에 새 분할 경고는 추가하지 않으며 기존 경고를 영어로 표시합니다.
+- `input_errors()`는 칸 이름을 키로, EngineError를 값으로 반환합니다. target도 `cmyk.0` 같은 칸 키로 지정합니다. GUI는 `.render(window.language)`를 표시하고 CMYK 오류 칸에는 기존 짧은 문구를 씁니다.
 
 ```python
 from color_patch_maker.engine.messages import t, EngineError
@@ -106,8 +107,16 @@ error = EngineError('input.integer', target='cmyk.0', value='40.5', name='C')
 assert str(error) == error.render('ko')
 ```
 
-템플릿 콤보 항목 데이터는 기본 제공의 경우 `default`·`card`, 사용자는 `user:<원래 이름>`, 사용자 설정 상태는 None입니다. 표시 이름으로 선택·일치·삭제·되돌리기를 판단하지 않습니다. 새 이름의 예약 목록은 사용자 설정, Custom, 기본, 카드, Default, Card, default, card입니다. 설정 저장 형식(레이아웃 칸과 사용자 템플릿 JSON 사전)은 변경하지 않습니다. 이전에 저장할 수 있었던 Default/Card/Custom 이름은 불러오기에서 보존하며 새 저장은 거부합니다. 이름과 템플릿 값은 번역하지 않습니다.
+템플릿 콤보 항목 데이터는 기본 제공의 경우 `default`·`card`, 사용자는 `user:<원래 이름>`, 사용자 설정 상태는 None입니다. 표시 이름으로 선택·일치·삭제·되돌리기를 판단하지 않습니다. 새 이름의 예약 목록은 사용자 설정, Custom, 기본, 카드, Default, Card, default, card입니다. 설정 저장 형식(레이아웃 칸과 사용자 템플릿 JSON 사전)은 변경하지 않습니다. 이전에 저장할 수 있었던 Default/Card/Custom 이름은 불러오기에서 보존하며 새 저장은 거부합니다. 이름과 템플릿 값은 번역하지 않습니다. 복원한 Default/Card/Custom은 화면에서만 ` (saved)` 또는 ` (저장)`를 붙여 기본 제공 항목과 구별합니다. 선택·삭제는 원래 사용자 식별자를 사용합니다.
 
-테스트는 사전 밖의 한글 문자열 리터럴(주석·docstring 제외), 키 사용 집합과 인자, 변경 전 오류 문장·CLI 스냅샷, 이전 설정 복원을 검사합니다. `tests/fixtures/messages_ko.json`과 `cli_ko.json`은 변경 전 main(`6f4b90b`)에서 얻은 기대값입니다. 인쇄 라벨·파일명·매니페스트 schema_version 2와 내용은 바꾸지 않았습니다.
+테스트는 사전 밖의 한글 문자열 리터럴(주석·docstring 제외), 키 사용 집합과 인자, 변경 전 오류 문장·CLI 스냅샷, 이전 설정 복원을 검사합니다. `tests/fixtures/messages_ko.json`과 `cli_ko.json`은 2-6 이전 main(`6f4b90b`)에서 얻은 기대값입니다. 한국어 오류 기대값은 `이상로` → `이상으로`만 수정했습니다. `cli_en.json`은 영어 CLI 기대값이며, 기존 9개 사례의 종료 코드·JSON stdout·생성 파일 해시는 그대로이고 도움말과 stderr 문구만 번역했습니다. 인쇄 라벨·파일명·매니페스트 schema_version 2와 내용은 바꾸지 않았습니다.
 
-2-7에서는 영어 113개 키를 채우고 로케일·언어 설정·복원 및 선택 언어의 렌더링을 연결합니다. CLI의 영어 전환, Windows 실제 대화 상자와 영어 화면의 1024×720 공간 검사는 그 단계에서 진행합니다.
+### 언어 결정과 설정
+
+`gui/language.py`의 `resolve_language(preference, locale_name)`은 저장된 `ko`·`en`을 우선하고, `auto`이면 `QLocale.system().name()`의 언어가 한국어일 때만 `ko`, 나머지는 `en`을 반환합니다. 테스트에서는 로케일 문자열을 주입합니다. QSettings 키 `language`의 기본값은 `auto`이며 알 수 없는 값도 `auto`로 처리합니다.
+
+MainWindow는 위젯을 만들기 전에 언어를 결정하고 `translator(language)`를 `window.t`로 묶어 생성·갱신·대화 상자에 전달합니다. 엔진 객체에는 언어 상태를 저장하지 않습니다. 언어 선택은 즉시 저장하지만 **다음 실행부터 적용**합니다. 실행 중 문구 일부만 바뀌는 일을 피하고 입력·선택·출력 상태를 유지하기 위한 설계 제안 그대로의 동작입니다. 한국어·English 항목은 각 언어의 고유 이름으로 표시합니다.
+
+CLI는 로케일이나 GUI 설정을 읽지 않고 항상 `t(..., 'en')`·`render('en')`을 사용합니다. 오류 접두어는 `error: `이며 JSON stdout·파일명·PDF·매니페스트는 언어와 무관합니다. CP949 메시지 인코딩은 Linux subprocess에서 검사하며 Windows 실제 콘솔 및 JSON 경로 인코딩을 확인한 것은 아닙니다.
+
+앱의 템플릿 대화 상자 버튼은 사전으로 표시합니다. 운영체제가 제공하는 폴더 선택 창과 파일 탐색기의 문구는 운영체제 설정을 따릅니다. 실제 Windows 대화 상자와 글꼴 배치는 수동 확인이 필요합니다. 한국어 캡처는 `docs/ui/screens/`, 영어는 `docs/ui/screens/en/`에 저장합니다.

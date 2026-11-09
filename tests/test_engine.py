@@ -223,7 +223,7 @@ def test_label_boundary_and_pdf_font(tmp_path):
 def test_unreadable_cli_no_output(tmp_path,extra):
     out = tmp_path/'output'
     result = subprocess.run([sys.executable,'-m','color_patch_maker.cli','grid','--cmyk','100','100','100','100',*extra,'--out-dir',str(out)],capture_output=True,text=True)
-    assert result.returncode == 2 and '최소 4.5pt' in result.stderr
+    assert result.returncode == 2 and '4.5 pt' in result.stderr
     assert not out.exists()
 
 
@@ -231,7 +231,7 @@ def test_unreadable_cli_no_output(tmp_path,extra):
 def test_invalid_mm_korean(tmp_path,option):
     values = ['abc','505'] if option == '--paper' else ['abc']
     result = subprocess.run([sys.executable,'-m','color_patch_maker.cli','grid','--cmyk','40','70','20','0',option,*values,'--out-dir',str(tmp_path/'out')],capture_output=True,text=True)
-    assert result.returncode == 2 and option[2:] in result.stderr and 'mm 값을 입력하세요' in result.stderr
+    assert result.returncode == 2 and option[2:] in result.stderr and 'mm' in result.stderr and 'enter a numeric value' in result.stderr
     assert not (tmp_path/'out').exists()
 
 

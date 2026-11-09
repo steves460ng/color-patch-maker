@@ -1,10 +1,11 @@
 """Main window composition and input/preview controller."""
-from color_patch_maker.engine.messages import t
 from pathlib import Path
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon
 from .settings import restore, save
-from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from .language import normalize_preference, resolve_language, translator
+from color_patch_maker.engine.messages import t
+from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox
 from .sidebar import Sidebar, named
 from .preview import Preview
 from .controller import Controller
@@ -18,10 +19,14 @@ def app_icon():
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, settings=None):
+    def __init__(self, settings=None, locale_name=None):
         super().__init__()
+        self.settings = settings if settings is not None else QSettings('ColorPatchMaker', 'ColorPatchMaker')
+        self.language_preference = normalize_preference(self.settings.value('language', 'auto'))
+        self.language = resolve_language(self.language_preference, locale_name)
+        self.t = translator(self.language)
         self.setObjectName('main_window')
-        self.setWindowTitle(t('app.title'))
+        self.setWindowTitle(self.t('app.title'))
         self.setWindowIcon(app_icon())
         self.setMinimumSize(1024, 720)
         self.resize(1200, 800)
@@ -29,14 +34,23 @@ class MainWindow(QMainWindow):
         box = QVBoxLayout(central)
         box.setContentsMargins(12, 12, 12, 12)
         header = QHBoxLayout()
-        header.addWidget(QLabel(t('app.title')))
+        header.addWidget(QLabel(self.t('app.title')))
         header.addStretch()
         header.addWidget(named(QLabel('–'), 'paper_info'))
+        self.language_combo = named(QComboBox(), 'language_selector')
+        self.language_combo.setAccessibleName(self.t('language.title'))
+        self.language_combo.addItem(self.t('language.auto'), 'auto')
+        self.language_combo.addItem(t('language.ko', 'ko'), 'ko')
+        self.language_combo.addItem(t('language.en', 'en'), 'en')
+        self.language_combo.setCurrentIndex(self.language_combo.findData(self.language_preference))
+        # Match the existing title row's height so the body retains its space.
+        self.language_combo.setFixedHeight(15)
+        header.addWidget(self.language_combo)
         box.addLayout(header)
         columns = QHBoxLayout()
         columns.setSpacing(12)
-        self.sidebar = Sidebar()
-        self.preview = Preview()
+        self.sidebar = Sidebar(self.t)
+        self.preview = Preview(self.t)
         columns.addWidget(self.sidebar)
         columns.addWidget(self.preview, 1)
         box.addLayout(columns, 1)
@@ -52,13 +66,19 @@ class MainWindow(QMainWindow):
             QScrollArea { border: none; }
             QPushButton { min-height: 28px; }
         ''')
-        self.settings = settings if settings is not None else QSettings('ColorPatchMaker', 'ColorPatchMaker')
         self.restore_notice = restore(self, self.settings)
         self.controller = Controller(self)
+        self.language_combo.currentIndexChanged.connect(self.change_language)
+
+    def change_language(self):
+        self.language_preference = self.language_combo.currentData()
+        self.settings.setValue('language', self.language_preference)
+        self.settings.sync()
+        self.controller.output.status(self.t('language.restart'))
 
     def closeEvent(self, event):
         if self.controller.output.busy:
-            self.controller.output.status(t('output.close_busy'))
+            self.controller.output.status(self.t('output.close_busy'))
             event.ignore()
             return
         save(self, self.settings)

@@ -1,0 +1,149 @@
+[
+  {
+    "args": [
+      "--help"
+    ],
+    "stdout": "usage: cpm [-h] {grid,ramp,verify} ...\n\npositional arguments:\n  {grid,ramp,verify}\n\noptions:\n  -h, --help          show this help message and exit\n",
+    "stderr": "",
+    "code": 0,
+    "hashes": {}
+  },
+  {
+    "args": [
+      "grid",
+      "--help"
+    ],
+    "stdout": "usage: cpm grid [-h] [--template TEMPLATE] [--paper PAPER PAPER]\n                [--margin MARGIN] [--gap GAP] [--patch-size PATCH_SIZE]\n                [--cols COLS] [--out-dir OUT_DIR] --cmyk CMYK CMYK CMYK CMYK\n                [--channels CHANNELS] [--step STEP] [--rows ROWS]\n\noptions:\n  -h, --help            show this help message and exit\n  --template TEMPLATE   default or card\n  --paper PAPER PAPER\n  --margin MARGIN\n  --gap GAP\n  --patch-size PATCH_SIZE\n  --cols COLS\n  --out-dir OUT_DIR\n  --cmyk CMYK CMYK CMYK CMYK\n  --channels CHANNELS\n  --step STEP\n  --rows ROWS\n",
+    "stderr": "",
+    "code": 0,
+    "hashes": {}
+  },
+  {
+    "args": [
+      "ramp",
+      "--help"
+    ],
+    "stdout": "usage: cpm ramp [-h] [--template TEMPLATE] [--paper PAPER PAPER]\n                [--margin MARGIN] [--gap GAP] [--patch-size PATCH_SIZE]\n                [--cols COLS] [--out-dir OUT_DIR] --from START START START\n                START --to END END END END --count COUNT\n\noptions:\n  -h, --help            show this help message and exit\n  --template TEMPLATE   default or card\n  --paper PAPER PAPER\n  --margin MARGIN\n  --gap GAP\n  --patch-size PATCH_SIZE\n  --cols COLS\n  --out-dir OUT_DIR\n  --from START START START START\n  --to END END END END\n  --count COUNT\n",
+    "stderr": "",
+    "code": 0,
+    "hashes": {}
+  },
+  {
+    "args": [
+      "verify",
+      "--help"
+    ],
+    "stdout": "usage: cpm verify [-h] pdf manifest\n\npositional arguments:\n  pdf\n  manifest\n\noptions:\n  -h, --help  show this help message and exit\n",
+    "stderr": "",
+    "code": 0,
+    "hashes": {}
+  },
+  {
+    "args": [
+      "grid",
+      "--cmyk",
+      "40.5",
+      "70",
+      "20",
+      "0"
+    ],
+    "stdout": "",
+    "stderr": "error: C: the printer uses whole numbers. Enter an integer.\n",
+    "code": 2,
+    "hashes": {}
+  },
+  {
+    "args": [
+      "grid",
+      "--cmyk",
+      "40",
+      "70",
+      "20",
+      "0",
+      "--template",
+      "unknown"
+    ],
+    "stdout": "",
+    "stderr": "error: template: choose default or card (Korean aliases are also accepted).\n",
+    "code": 2,
+    "hashes": {}
+  },
+  {
+    "args": [
+      "grid",
+      "--cmyk",
+      "0",
+      "100",
+      "20",
+      "0"
+    ],
+    "stdout": "{\"files\": [\"{OUTPUT}/C0_M100_Y20_K0_CM_s1.pdf\", \"{OUTPUT}/C0_M100_Y20_K0_CM_s1.json\"]}\n",
+    "stderr": "33 patches clamped to 0/100\n",
+    "code": 0,
+    "hashes": {
+      "C0_M100_Y20_K0_CM_s1.json": "e743adbf2ece28c664253cc37779e7dc4e36c3f2380ff16a316f7d6eda1ecf53",
+      "C0_M100_Y20_K0_CM_s1.pdf": "469b8052ff71acf0260ef9207b97e983c9cef6c13fa3a9a2a59dfd1469f714c4"
+    }
+  },
+  {
+    "args": [
+      "grid",
+      "--cmyk",
+      "100",
+      "100",
+      "100",
+      "100",
+      "--template",
+      "card"
+    ],
+    "stdout": "{\"files\": [\"{OUTPUT}/C100_M100_Y100_K100_CM_s1_01.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_01.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_02.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_02.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_03.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_03.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_04.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_04.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_05.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_05.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_06.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_06.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_07.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_07.json\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_08.pdf\", \"{OUTPUT}/C100_M100_Y100_K100_CM_s1_08.json\"]}\n",
+    "stderr": "33 patches clamped to 0/100\n",
+    "code": 0,
+    "hashes": {
+      "C100_M100_Y100_K100_CM_s1_07.json": "915f18056ce98784edd9f5b455e83ad855c705db35066d30394939564397886b",
+      "C100_M100_Y100_K100_CM_s1_08.json": "ac46d0fadee39b7cdc99d66561f3c46825c2ec34198276c4d7fd40a9925f1a47",
+      "C100_M100_Y100_K100_CM_s1_04.json": "d13bdd1a8d18dd41b59d218f2e0e74de760aa814cc2dd91681655d3cf250b7f3",
+      "C100_M100_Y100_K100_CM_s1_05.pdf": "f76096a05dbbf3c2231f7cd16efb7a3dfe7f3320370d752e1bcce2d89cfd5ac9",
+      "C100_M100_Y100_K100_CM_s1_07.pdf": "a4ca0eca4bdf84a105b198742610f53a0c1f664cc9a121ebe4951ee684b90496",
+      "C100_M100_Y100_K100_CM_s1_04.pdf": "e545eba83c6598f6a8a1ebc76bdab9ed0879c4c58363391f1c3ac67d1fae260c",
+      "C100_M100_Y100_K100_CM_s1_03.json": "6d2a0724cdf1f9ba65a54f91c51af25484816f387dcfcb4ae091229daf4cfa7e",
+      "C100_M100_Y100_K100_CM_s1_02.pdf": "e545eba83c6598f6a8a1ebc76bdab9ed0879c4c58363391f1c3ac67d1fae260c",
+      "C100_M100_Y100_K100_CM_s1_01.json": "a75285ddac9f5fec1473036c81bbb43f15c4fb2ba576c0e13d97044cce9c9572",
+      "C100_M100_Y100_K100_CM_s1_06.pdf": "14afda3fb4c9201c707e3116464ae8f379607ea47675cf99e7c0cdaabb893ca8",
+      "C100_M100_Y100_K100_CM_s1_08.pdf": "2b16179d33ab8ef59f8192bd6599d04a88109973fae547c83835b73b669edc8e",
+      "C100_M100_Y100_K100_CM_s1_05.json": "70822132d8eee15e5d59eac018cf14a0c8aea19b9350e452a3d49e8cb71d2458",
+      "C100_M100_Y100_K100_CM_s1_03.pdf": "27e42ecf0d415e528c8dbabb2167a2f433747c7b9f6d301a2eb05a444129d7d4",
+      "C100_M100_Y100_K100_CM_s1_01.pdf": "3371f44b9501cfe99937f9681e41c1037e741f9c8189e56e9a9d7bfba7fe8d6e",
+      "C100_M100_Y100_K100_CM_s1_06.json": "ae9f898718d07738fa5070ce89c804dd080c47f58977cdf80de982f3021a63cb",
+      "C100_M100_Y100_K100_CM_s1_02.json": "a6e72cf758e80c16e5e09eb0e8848b354af47ba7f0605947fd346464f06d3658"
+    }
+  },
+  {
+    "args": [
+      "ramp",
+      "--from",
+      "40",
+      "70",
+      "20",
+      "0",
+      "--to",
+      "30",
+      "75",
+      "30",
+      "5",
+      "--count",
+      "11",
+      "--template",
+      "card"
+    ],
+    "stdout": "{\"files\": [\"{OUTPUT}/C40_M70_Y20_K0_to_C30_M75_Y30_K5_n11_01.pdf\", \"{OUTPUT}/C40_M70_Y20_K0_to_C30_M75_Y30_K5_n11_01.json\", \"{OUTPUT}/C40_M70_Y20_K0_to_C30_M75_Y30_K5_n11_02.pdf\", \"{OUTPUT}/C40_M70_Y20_K0_to_C30_M75_Y30_K5_n11_02.json\"]}\n",
+    "stderr": "",
+    "code": 0,
+    "hashes": {
+      "C40_M70_Y20_K0_to_C30_M75_Y30_K5_n11_02.json": "bccf6afcb9aa985c834ab6e93bea9a8c82f5fbcd85ec84051618830fe6b97657",
+      "C40_M70_Y20_K0_to_C30_M75_Y30_K5_n11_01.pdf": "9a887533ada139c3df7aa8d1cea2150714a357a230927da09c264a5ee3685d7d",
+      "C40_M70_Y20_K0_to_C30_M75_Y30_K5_n11_02.pdf": "ae52991a463bf697a8f42dcca21a492aa044ac86e82c856b1c40173719f32a54",
+      "C40_M70_Y20_K0_to_C30_M75_Y30_K5_n11_01.json": "289c36d9dc896cec125397a48ebbf2beeab1d4dbe724e7aa2a9cf54ec09e5e8f"
+    }
+  }
+]

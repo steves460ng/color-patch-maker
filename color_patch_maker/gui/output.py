@@ -1,5 +1,5 @@
 """Background export and output controls. File policy stays in the engine."""
-from color_patch_maker.engine.messages import t
+from .language import error_text, translator
 import copy
 import errno
 from pathlib import Path
@@ -9,16 +9,17 @@ from PySide6.QtWidgets import QFileDialog
 from color_patch_maker.engine.pdf import export, preview_paths
 
 
-def failure_message(error):
+def failure_message(error, language):
+    translate = translator(language)
     if isinstance(error, PermissionError):
-        return t('output.permission')
+        return translate('output.permission')
     if isinstance(error, OSError) and error.errno == errno.ENOSPC:
-        return t('output.disk_full')
+        return translate('output.disk_full')
     if isinstance(error, FileNotFoundError):
-        return t('output.folder_missing')
+        return translate('output.folder_missing')
     if isinstance(error, ValueError):
-        return t('output.verify_failure', error=error)
-    return t('output.failure', error=error)
+        return translate('output.verify_failure', error=error_text(error, language))
+    return translate('output.failure', error=error_text(error, language))
 
 
 class ExportThread(QThread):
@@ -40,6 +41,8 @@ class OutputController:
     def __init__(self, controller):
         self.controller = controller
         self.window = controller.window
+        self.t = self.window.t
+        self.language = self.window.language
         self.widget = controller.widget
         self.busy = False
         self.thread = None
@@ -69,22 +72,22 @@ class OutputController:
         folder = self.widget('output_folder').text()
         error = ''
         if not folder:
-            error = t('output.folder_required')
+            error = self.t('output.folder_required')
         elif not Path(folder).is_dir():
-            error = t('output.folder_invalid')
+            error = self.t('output.folder_invalid')
         self.widget('output_folder_error').setText(error)
         document = self.controller.document
         if document and not error:
             try:
                 names = [Path(p).name for p in preview_paths(document,folder) if p.endswith('.pdf')]
-                self.widget('filename_preview').setText(names[0] if len(names)==1 else t('output.filename_range', first=names[0], last=names[-1]))
+                self.widget('filename_preview').setText(names[0] if len(names)==1 else self.t('output.filename_range', first=names[0], last=names[-1]))
             except OSError as exc:
-                error = failure_message(exc)
+                error = failure_message(exc, self.language)
                 self.widget('output_folder_error').setText(error)
         self.widget('make_pdf_button').setEnabled(bool(document and not error and not self.busy))
 
     def browse(self):
-        folder = QFileDialog.getExistingDirectory(self.window,t('output.choose_folder'),self.widget('output_folder').text())
+        folder = QFileDialog.getExistingDirectory(self.window,self.t('output.choose_folder'),self.widget('output_folder').text())
         if folder:
             self.widget('output_folder').setText(folder)
 
@@ -98,7 +101,7 @@ class OutputController:
         self.busy = True
         self.thread = ExportThread(self.controller.document, self.widget('output_folder').text(), self.window)
         self.lock(True)
-        self.status(t('output.busy'))
+        self.status(self.t('output.busy'))
         self.thread.finished.connect(self.finished)
         self.thread.start()
 
@@ -113,11 +116,11 @@ class OutputController:
         self.busy = False
         self.lock(False)
         if thread.error:
-            self.status(failure_message(thread.error))
+            self.status(failure_message(thread.error, self.language))
         else:
             self.completed_folder = thread.folder
             names = [Path(p).name for p in thread.files if p.endswith('.pdf')]
-            self.status(t('output.success', names='\n'.join(names)))
+            self.status(self.t('output.success', names='\n'.join(names)))
             self.widget('open_folder_button').setEnabled(True)
 
         self.update()
@@ -127,4 +130,4 @@ class OutputController:
     def open_folder(self):
         if self.completed_folder:
             if not QDesktopServices.openUrl(QUrl.fromLocalFile(str(Path(self.completed_folder).resolve()))):
-                self.status(t('output.open_failed'))
+                self.status(self.t('output.open_failed'))

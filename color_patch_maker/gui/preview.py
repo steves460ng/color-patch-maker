@@ -1,5 +1,4 @@
 """Aspect-preserving engine layout preview and patch hit testing."""
-from color_patch_maker.engine.messages import t
 from PySide6.QtCore import QRectF, Qt, Signal
 from PySide6.QtGui import QColor, QPainter, QPen, QFont
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
@@ -14,11 +13,12 @@ def screen_color(values):
 
 class PaperPlaceholder(QWidget):
     patch_clicked = Signal(object)
-    def __init__(self):
+    def __init__(self, translate):
         super().__init__()
+        self.t = translate
         self.setObjectName('paper_placeholder')
         self.setMinimumSize(100, 100)
-        self.setAccessibleName(t('preview.paper'))
+        self.setAccessibleName(self.t('preview.paper'))
         self.document = None
         self.page_index = 0
         self.selected_id = None
@@ -61,7 +61,7 @@ class PaperPlaceholder(QWidget):
         painter.setPen(QColor('#626c77'))
         if not self.document:
             painter.drawText(rect.adjusted(16,16,-16,-16), Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap,
-                             t('preview.invalid'))
+                             self.t('preview.invalid'))
             return
         scale = rect.width()/self.document['paper_mm'][0]
         for patch in self.patches:
@@ -84,20 +84,21 @@ class PaperPlaceholder(QWidget):
 
 
 class Preview(QWidget):
-    def __init__(self):
+    def __init__(self, translate):
         super().__init__()
+        self.t = translate
         self.setObjectName('preview')
         box = QVBoxLayout(self)
         box.setContentsMargins(0, 0, 0, 0)
-        self.paper = PaperPlaceholder()
+        self.paper = PaperPlaceholder(translate)
         box.addWidget(self.paper, 1)
         pager = QHBoxLayout()
         pager.addStretch()
-        pager.addWidget(button(t('preview.previous'), 'previous_page_button'))
-        pager.addWidget(label(t('preview.page', current=1, total=1), 'page_indicator'))
-        pager.addWidget(button(t('preview.next'), 'next_page_button'))
+        pager.addWidget(button(self.t('preview.previous'), 'previous_page_button'))
+        pager.addWidget(label(self.t('preview.page', current=1, total=1), 'page_indicator'))
+        pager.addWidget(button(self.t('preview.next'), 'next_page_button'))
         pager.addStretch()
         box.addLayout(pager)
-        note = label(t('preview.color_note'), 'screen_color_note')
+        note = label(self.t('preview.color_note'), 'screen_color_note')
         note.setAlignment(Qt.AlignmentFlag.AlignCenter)
         box.addWidget(note)
