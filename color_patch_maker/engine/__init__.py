@@ -7,7 +7,7 @@ import re
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.lib.units import mm
 
-MIN_LABEL_PT = 6
+MIN_LABEL_PT = 4.5
 LABEL_FONT = "Helvetica"
 FIT_TOLERANCE_MM = 1e-9
 
@@ -55,7 +55,7 @@ def layout(mode, *, cmyk=None, start=None, end=None, channels='CM', step=1,
     if len(paper) != 2:
         raise ValueError('paper: 폭과 높이를 입력하세요.')
     margin, gap = number(margin, 'margin'), number(gap, 'gap')
-    width, height = paper[0] - 2 * margin, paper[1] - 2 * margin - 15
+    width, height = paper[0] - 2 * margin, paper[1] - 2 * margin
     size = None if patch_size is None else number(patch_size, 'patch-size', 5)
     if width <= 0 or height <= 6:
         raise ValueError('paper/margin: 패치 공간이 없습니다. 용지를 키우거나 여백을 줄이세요.')
@@ -111,8 +111,8 @@ def layout(mode, *, cmyk=None, start=None, end=None, channels='CM', step=1,
                     if index >= len(patches):
                         continue
                     p = patches[index].copy()
-                    p['rect_mm'] = [margin + (c-left)*(size+gap), paper[1]-margin-15-size-(r-top)*(size+6+gap), size, size]
-                    p['label'] = p['id'] + ' ' + color_name(p['cmyk']).replace('_', ' ') + (' *' if p.get('reference') else '') + (' >' if p.get('endpoint') == 'start' else ' <' if p.get('endpoint') == 'end' else '')
+                    p['rect_mm'] = [margin + (c-left)*(size+gap), paper[1]-margin-size-(r-top)*(size+6+gap), size, size]
+                    p['label'] = patch_label(p)
                     font_size = min(7, 7*size*mm/stringWidth(p['label'], LABEL_FONT, 7))
                     if font_size < MIN_LABEL_PT:
                         raise ValueError(f'라벨: 최소 {MIN_LABEL_PT}pt를 확보할 수 없습니다. 패치 크기를 키우거나 칸 수를 줄이세요.')
@@ -157,7 +157,9 @@ def output_names(document):
     return [document['stem'] + (f'_{i+1:02}' if count > 1 else '') + '.pdf' for i in range(count)]
 
 
-def page_header(document, page):
-    return (f"{document['settings']['mode']} {document['stem']} | "
-            f"{page['number']}/{len(document['pages'])} | "
-            f"{page['patches'][0]['id']} - {page['patches'][-1]['id']}")
+def patch_label(patch):
+    """Printed CMYK line; identifiers remain separate manifest/GUI data."""
+    suffix = ' *' if patch.get('reference') else ''
+    if patch.get('endpoint'):
+        suffix = ' >' if patch['endpoint'] == 'start' else ' <'
+    return color_name(patch['cmyk']).replace('_', ' ') + suffix

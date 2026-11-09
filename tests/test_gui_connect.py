@@ -53,7 +53,7 @@ def test_other_field_errors(window,name,value):
     assert widget(window,name+'_error').text() and not window.preview.paper.patches
 
 
-@pytest.mark.parametrize('settings,part', [({'grid_cols':100},'5mm'),({'layout_patch_size':10},'6pt'),({'layout_patch_size':500},'들어가지')])
+@pytest.mark.parametrize('settings,part', [({'grid_cols':100},'5mm'),({'layout_patch_size':10},'4.5pt'),({'layout_patch_size':500},'들어가지')])
 def test_layout_errors(window,settings,part):
     for name,value in settings.items(): set_value(window,name,value)
     assert part in widget(window,'warning_list').text()

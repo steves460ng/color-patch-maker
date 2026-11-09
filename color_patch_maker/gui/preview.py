@@ -3,7 +3,7 @@ from PySide6.QtCore import QRectF, Qt, Signal
 from PySide6.QtGui import QColor, QPainter, QPen, QFont
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from .sidebar import named, label, button
-from color_patch_maker.engine import page_header, template_values
+from color_patch_maker.engine import LABEL_FONT, template_values
 
 
 def screen_color(values):
@@ -63,15 +63,6 @@ class PaperPlaceholder(QWidget):
                              '입력값을 확인하세요')
             return
         scale = rect.width()/self.document['paper_mm'][0]
-        margin = self.document['settings']['margin']*scale
-        painter.save()
-        header_rect = QRectF(rect.left()+margin,rect.top()+margin,rect.width()-2*margin,12*scale)
-        painter.setClipRect(header_rect)
-        font = QFont('Sans Serif'); font.setPointSizeF(max(1, 5*scale))
-        painter.setFont(font)
-        painter.drawText(header_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
-                         page_header(self.document,self.document['pages'][self.page_index]))
-        painter.restore()
         for patch in self.patches:
             box = self.patch_rect(patch)
             painter.fillRect(box, screen_color(patch['cmyk']))
@@ -84,8 +75,8 @@ class PaperPlaceholder(QWidget):
             painter.save()
             painter.setClipRect(strip)
             painter.setPen(QColor('#111111'))
-            font = QFont('Helvetica')
-            font.setPointSizeF(max(0.5,patch['label_font_pt']*scale*25.4/self.logicalDpiX()))
+            font = QFont(LABEL_FONT)
+            font.setPointSizeF(patch['label_font_pt']*scale*25.4/self.logicalDpiX())
             painter.setFont(font)
             painter.drawText(strip,Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,patch['label'])
             painter.restore()

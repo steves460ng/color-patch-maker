@@ -59,7 +59,7 @@ def test_split_and_export(tmp_path, mode, kwargs):
     assert len(ps) == len({p['id'] for p in ps}) == expected
     for p in ps:
         x,y,w,h = p['rect_mm']
-        assert 20 <= x and x+w <= 285 and 26 <= y and y+h <= 470
+        assert 20 <= x and x+w <= 285 and 26 <= y and y+h <= 485
         assert all(type(v) is int for v in p['cmyk'])
     files = export(split, tmp_path)
     original = {f: open(f,'rb').read() for f in files}
@@ -181,7 +181,7 @@ def test_auto_grid_single_page(tmp_path, cols, rows):
     try:
         default = layout('grid', cmyk=[40,70,20,0], cols=cols, rows=rows)
     except ValueError as exc:
-        assert '최소 6pt' in str(exc)
+        assert '최소 4.5pt' in str(exc)
     else:
         assert len(default['pages']) == 1
 
@@ -198,7 +198,7 @@ def test_fixed_size_exact_fit():
     doc = layout('grid', cmyk=[0]*4,cols=9,rows=9,patch_size=size)
     assert len(doc['pages']) == 1
     # Height, too: use a generous width to keep labels readable.
-    size = (450-8*3)/9-6
+    size = (465-8*3)/9-6
     doc = layout('grid', cmyk=[40]*4,cols=1,rows=9,patch_size=size)
     assert len(doc['pages']) == 1
 
@@ -207,7 +207,7 @@ def test_label_boundary_and_pdf_font(tmp_path):
     from color_patch_maker.engine import MIN_LABEL_PT, LABEL_FONT
     from reportlab.pdfbase.pdfmetrics import stringWidth
     from reportlab.lib.units import mm
-    label = 'R1C1 C100 M100 Y100 K100 *'
+    label = 'C100 M100 Y100 K100 *'
     boundary = stringWidth(label,LABEL_FONT,MIN_LABEL_PT)/mm
     with pytest.raises(ValueError, match='패치 크기를 키우거나 칸 수를 줄이세요'):
         layout('grid',cmyk=[100]*4,cols=1,rows=1,patch_size=boundary-1e-6)
@@ -223,7 +223,7 @@ def test_label_boundary_and_pdf_font(tmp_path):
 def test_unreadable_cli_no_output(tmp_path,extra):
     out = tmp_path/'output'
     result = subprocess.run([sys.executable,'-m','color_patch_maker.cli','grid','--cmyk','100','100','100','100',*extra,'--out-dir',str(out)],capture_output=True,text=True)
-    assert result.returncode == 2 and '최소 6pt' in result.stderr
+    assert result.returncode == 2 and '최소 4.5pt' in result.stderr
     assert not out.exists()
 
 

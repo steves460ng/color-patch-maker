@@ -40,7 +40,7 @@ def unrelated(w):
 def test_builtin_values_and_copies():
     assert template_names() == ('기본', '카드')
     assert template_values('기본') == template_values('default') == dict(paper=[305,505],margin=20,gap=3,patch_size=None)
-    assert template_values('카드') == template_values('card') == dict(paper=[85.6,54],margin=3,gap=1,patch_size=25)
+    assert template_values('카드') == template_values('card') == dict(paper=[85.6,54],margin=2,gap=1,patch_size=18)
     value = template_values('card'); value['paper'][0] = 1
     assert template_values('card')['paper'][0] == 85.6
 
@@ -67,8 +67,8 @@ def test_choose_reset_and_name(window, tmp_path, tab):
     assert unrelated(window) == before
 
 
-@pytest.mark.parametrize('count,pages', [(7,21),(3,3)])
-@pytest.mark.parametrize('cmyk', [[40,70,20,0],[100,70,20,0]])
+@pytest.mark.parametrize('count,pages', [(7,8),(3,2)])
+@pytest.mark.parametrize('cmyk', [[40,70,20,0],[100,70,20,0],[100,100,100,100]])
 def test_card_output(tmp_path,count,pages,cmyk):
     doc = layout('grid',cmyk=cmyk,cols=count,rows=count,**template_values('card'))
     assert len(doc['pages']) == pages
@@ -79,12 +79,14 @@ def test_card_output(tmp_path,count,pages,cmyk):
             assert len(file.pages) == 1
 
 
-def test_card_label_error(window):
-    widget(window,'grid_cmyk_c').setText('100')
-    widget(window,'grid_cmyk_m').setText('100')
+def test_card_longest_label(window):
+    for channel in 'cmyk':
+        widget(window,'grid_cmyk_'+channel).setText('100')
     choose(window,'카드')
-    assert window.controller.document is None
-    assert '라벨' in widget(window,'warning_list').text()
+    assert len(window.controller.document['pages']) == 8
+    assert '라벨' not in widget(window,'warning_list').text()
+    assert any(p['label']=='C100 M100 Y100 K100 *'
+               for page in window.controller.document['pages'] for p in page['patches'])
 
 
 def dialog(monkeypatch, name, accepted=True, confirm=QMessageBox.StandardButton.Yes):
@@ -200,7 +202,7 @@ def test_cli_partial_override(tmp_path):
     expected=export(layout('grid',cmyk=[40,70,20,0],**values),tmp_path/'expected')
     for a,b in zip(actual[1::2],expected[1::2]):
         assert json.loads(Path(a).read_text(encoding='utf-8'))==json.loads(Path(b).read_text(encoding='utf-8'))
-    assert len(actual)==len(expected)==42
+    assert len(actual)==len(expected)==16
 
 
 def test_duplicate_values_reset(window,monkeypatch):
