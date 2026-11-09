@@ -26,10 +26,13 @@ def template_id(name):
     raise EngineError('template.unknown', target='template', value=name)
 
 
+def legacy_template_names():
+    return frozenset((t('template.custom', 'en'), *(template_label(key, 'en') for key in _TEMPLATES)))
+
+
 def reserved_template_names():
-    # English spellings are reserved identifiers, not an English UI catalog.
-    return frozenset((*_TEMPLATES, *(template_label(key) for key in _TEMPLATES),
-                      t('template.custom'), 'Custom', 'Default', 'Card'))
+    return frozenset((*_TEMPLATES, *(template_label(key, 'ko') for key in _TEMPLATES),
+                      t('template.custom', 'ko'), *legacy_template_names()))
 
 
 def template_values(name):

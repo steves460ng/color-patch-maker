@@ -1,6 +1,6 @@
 """GUI-independent patch and layout engine; coordinates use bottom-left mm."""
 from color_patch_maker.engine.messages import EngineError, Message
-from .templates import template_names, template_values, validate_template, template_label, template_id, reserved_template_names
+from .templates import template_names, template_values, validate_template, template_label, template_id, reserved_template_names, legacy_template_names
 
 import math
 import re

@@ -1,5 +1,4 @@
 """Persist only folder and shared layout; never color or mode inputs."""
-from color_patch_maker.engine.messages import t
 from pathlib import Path
 from PySide6.QtWidgets import QLineEdit
 from color_patch_maker.engine import validate_template, template_values
@@ -34,7 +33,7 @@ def restore(window, settings):
     folder = str(settings.value('output_folder',''))
     missing = bool(folder and not Path(folder).is_dir())
     window.findChild(QLineEdit,'output_folder').setText('' if missing else folder)
-    return t('settings.missing_folder') if missing else ''
+    return window.t('settings.missing_folder') if missing else ''
 
 
 def save(window, settings):

@@ -17,12 +17,12 @@
 </p>
 
 <p align="center">
-  <img src="docs/ui/screens/1600x900-selected.png" width="100%" alt="Color Patch Maker window: settings on the left, a 7×7 patch preview on the right">
+  <img src="docs/ui/screens/en/1600x900-selected.png" width="100%" alt="Color Patch Maker window: settings on the left, a 7×7 patch preview on the right">
 </p>
 
 When a printed color doesn't match the physical sample, nudging the numbers and reprinting over and over gets tedious. Enter the original CMYK value, and Color Patch Maker builds a print-ready PDF chart of nearby colors laid out by rules you choose. Put the print next to the sample, pick the closest patch, and use the CMYK value printed under it.
 
-The app's interface is in Korean. Screen names in this guide are given in English with the Korean label in parentheses.
+The interface follows your system language: Korean on Korean systems, English otherwise. You can choose Auto (system), 한국어 or English beside the sheet information at the top of the window. Changes apply the next time you open the app.
 
 ## How it works
 
@@ -43,7 +43,7 @@ Keeps the base color in the middle and changes two channels across and down in f
 - Size: columns and rows set separately, 7×7 by default
 
 <p align="center">
-  <img src="docs/ui/screens/1600x900-grid.png" width="100%" alt="Two-channel grid preview">
+  <img src="docs/ui/screens/en/1600x900-grid.png" width="100%" alt="Two-channel grid preview">
 </p>
 
 ### Start–end ramp
@@ -60,7 +60,7 @@ Example: C40 M70 Y20 K0 → C30 M75 Y30 K5, 11 patches
 | K | 0 | 1 | 1 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 |
 
 <p align="center">
-  <img src="docs/ui/screens/1600x900-ramp.png" width="100%" alt="Start–end ramp preview">
+  <img src="docs/ui/screens/en/1600x900-ramp.png" width="100%" alt="Start–end ramp preview">
 </p>
 
 ## Output built for the print shop
@@ -78,12 +78,12 @@ Example: C40 M70 Y20 K0 → C30 M75 Y30 K5, 11 patches
 | --- | --- |
 | Mode tabs | Switch between the two-channel grid and the start–end ramp. Each tab keeps its own inputs. |
 | Settings | Enter CMYK, step and patch counts. Invalid values are flagged right under the field. |
-| Layout (레이아웃) | Set the sheet (305×505 mm by default), margin (20 mm by default), patch size (auto or mm) and patch spacing. |
+| Layout | Set the sheet (305×505 mm by default), margin (20 mm by default), patch size (auto or mm) and patch spacing. |
 | Preview | Shows the patch layout at the sheet's true proportions, with page buttons when the output spans several sheets. |
-| Selected patch (선택한 패치) | Shows the values of the patch you clicked and puts them into the next run as the base, start or end. |
+| Selected patch | Shows the values of the patch you clicked and puts them into the next run as the base, start or end. |
 | Notices and save | Show warnings and results, and create the PDF in the folder you choose. |
 
-The window stays responsive while the PDF is being made. When it finishes, you see the list of files and the check result, and **Open folder** (폴더 열기) takes you straight there. The save folder and layout settings come back the next time you open the app.
+The window stays responsive while the PDF is being made. When it finishes, you see the list of files and the check result, and **Open folder** takes you straight there. The save folder and layout settings come back the next time you open the app.
 
 Expand Layout to choose **Default** (305×505 mm) or **Card** (85.6×54 mm). Save the sheet, margin, spacing and patch size you use often under a name with **Save template**. Saving over an existing name asks first, and only templates you created can be deleted. **Reset to defaults** resets only the layout and keeps your colors, patch counts and save folder.
 
@@ -91,7 +91,7 @@ The Card template uses a 2 mm margin and 18 mm patches, fitting up to 8 patches 
 
 ## Command line
 
-For repeated jobs, the same features are available in the command-line program `cpm.exe`, which is included in the download.
+For repeated jobs, the same features are available in the command-line program `cpm.exe`, which is included in the download. Command-line help, warnings and errors are always in English, regardless of the app language.
 
 ```powershell
 cpm.exe grid --cmyk 40 70 20 0 --channels CM --step 1 --cols 7 --rows 7 --out-dir output

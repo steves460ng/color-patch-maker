@@ -1,3 +1,4 @@
+from color_patch_maker.gui.dialogs import InputDialog as QInputDialog, MessageBox as QMessageBox
 import json
 import subprocess
 import sys
@@ -6,7 +7,7 @@ from pathlib import Path
 import pikepdf
 import pytest
 from PySide6.QtCore import QSettings
-from PySide6.QtWidgets import QApplication, QWidget, QLineEdit, QInputDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QWidget, QLineEdit
 from color_patch_maker.engine import layout, template_names, template_values
 from color_patch_maker.engine.pdf import export, verify
 from color_patch_maker.gui.window import MainWindow
@@ -190,7 +191,7 @@ def test_cli_priority_and_unknown(tmp_path):
     paths=export(expected,tmp_path/'expected')
     assert json.loads(Path(manifest).read_text(encoding='utf-8'))['patches']==json.loads(Path(paths[1]).read_text(encoding='utf-8'))['patches']
     result=subprocess.run([*args,'--template','unknown'],capture_output=True,text=True)
-    assert result.returncode==2 and all(s in result.stderr for s in ['기본','카드','default','card'])
+    assert result.returncode==2 and all(s in result.stderr for s in ['default','card'])
 
 
 def test_cli_partial_override(tmp_path):

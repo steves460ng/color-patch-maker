@@ -10,7 +10,7 @@ from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QApplication, QWidget
 import color_patch_maker.engine as engine
 from color_patch_maker.engine import templates
-from color_patch_maker.engine.messages import KO, CATALOGS, t, Message, EngineError
+from color_patch_maker.engine.messages import KO, EN, CATALOGS, t, Message, EngineError
 from color_patch_maker.gui.window import MainWindow
 
 ROOT=Path('color_patch_maker')
@@ -42,7 +42,7 @@ def test_catalog_keys_and_call_arguments():
         raise AssertionError(f'Untracked message key expression: {ast.dump(expr)}')
     for path,tree in sources():
         for call in ast.walk(tree):
-            if not isinstance(call,ast.Call) or not isinstance(call.func,ast.Name) or call.func.id not in ('t','Message','EngineError'):
+            if not isinstance(call,ast.Call) or not ((isinstance(call.func,ast.Name) and call.func.id in ('t','translate','Message','EngineError')) or (isinstance(call.func,ast.Attribute) and call.func.attr=='t')):
                 continue
             for key in keys(call.args[0]):
                 assert key in KO,(path,key)
@@ -50,10 +50,11 @@ def test_catalog_keys_and_call_arguments():
                 required={field for _,field,_,_ in Formatter().parse(KO[key]) if field is not None}
                 supplied={kw.arg for kw in call.keywords}
                 if None not in supplied:
-                    supplied-={'language'} if call.func.id=='t' else {'target','value'} if call.func.id=='EngineError' else set()
+                    func = call.func.id if isinstance(call.func,ast.Name) else 't'
+                    supplied-={'language'} if func in ('t','translate') else {'target','value'} if func=='EngineError' else set()
                     assert required==supplied,(path,key,required,supplied)
     assert used==set(KO)
-    assert set(CATALOGS)=={'ko'}
+    assert set(CATALOGS)=={'ko','en'}
 
 
 @pytest.mark.parametrize('key',KO)
@@ -70,7 +71,7 @@ def test_every_template_formats_and_rejects_missing_values(key):
 
 def test_unknown_keys_and_languages_fail():
     with pytest.raises(KeyError):t('missing.key')
-    with pytest.raises(KeyError):t('app.title',language='en')
+    with pytest.raises(KeyError):t('app.title',language='missing')
 
 
 @pytest.mark.parametrize('case',GOLDEN,ids=lambda case:case['code']+'-'+case['function'])
@@ -121,7 +122,7 @@ def test_old_settings_and_identifier_selection(tmp_path):
         widget('reset_layout_button').click()
         assert combo.currentData()=='default' and combo.currentText()=='기본'
         index=combo.findData('user:Card');combo.setCurrentIndex(index);combo.activated.emit(index)
-        assert combo.currentData()=='user:Card' and combo.currentText()=='Card'
+        assert combo.currentData()=='user:Card' and combo.currentText()=='Card (저장)'
         assert widget('delete_template_button').isEnabled()
         assert widget('grid_cmyk_c').text()=='40'
     finally:w.close()
@@ -133,14 +134,14 @@ def test_expanded_reserved_names():
     assert engine.reserved_template_names()=={'사용자 설정','Custom','기본','카드','Default','Card','default','card'}
     for name in engine.reserved_template_names():
         with pytest.raises(ValueError,match='기본 제공 이름·별칭과 사용자 설정은 이름으로 사용할 수 없습니다.'):
-            TemplateController.check_name(name)
+            TemplateController.check_name(name, language='ko')
 
 
-CLI_GOLDEN=json.loads((Path(__file__).parent/'fixtures/cli_ko.json').read_text(encoding='utf-8'))
+CLI_GOLDEN=json.loads((Path(__file__).parent/'fixtures/cli_en.json').read_text(encoding='utf-8'))
 
 
 @pytest.mark.parametrize('case',CLI_GOLDEN,ids=lambda case:' '.join(case['args']))
-def test_cli_matches_pre_refactor(case,tmp_path):
+def test_cli_english_output(case,tmp_path):
     import hashlib
     import os
     import subprocess
@@ -163,7 +164,7 @@ def test_cli_matches_pre_refactor(case,tmp_path):
 
 
 def test_template_dialog_wording_unchanged(tmp_path,monkeypatch):
-    from PySide6.QtWidgets import QInputDialog, QMessageBox
+    from color_patch_maker.gui.dialogs import InputDialog as QInputDialog, MessageBox as QMessageBox
     app=QApplication.instance() or QApplication([])
     window=MainWindow(QSettings(str(tmp_path/'dialogs.ini'),QSettings.Format.IniFormat))
     inputs=[];questions=[];warnings=[]
