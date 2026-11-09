@@ -48,3 +48,18 @@ PDF마다 같은 이름의 JSON을 저장하고 기존 이름과 충돌하면 �
 엔진의 `layout()`은 PDF를 쓰지 않고 장 목록, 패치 ID·정수 CMYK·라벨·mm 사각형을 반환합니다.
 좌표 원점은 용지 왼쪽 아래입니다. `engine.pdf.export()`는 이 데이터를 출력하고 즉시 역검사합니다.
 `verify`는 이 도구가 생성한 PDF와 매니페스트 쌍의 저장값을 검증합니다.
+
+## 데스크톱 화면
+
+```sh
+.venv/bin/python -m color_patch_maker.gui
+```
+
+현재 화면은 레이아웃·탭 전환·레이아웃 접기만 제공합니다. 계산과 출력 연결 상태는 진행상황 문서를 참조하세요.
+
+화면 없는 GUI 검사 및 캡처:
+
+```sh
+QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/test_gui.py -q
+QT_QPA_PLATFORM=offscreen .venv/bin/python scripts/capture_gui.py
+```
