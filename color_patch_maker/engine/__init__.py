@@ -119,3 +119,43 @@ def layout(mode, *, cmyk=None, start=None, end=None, channels='CM', step=1,
             pages.append(dict(patches=page, number=len(pages)+1))
     return dict(settings=settings, stem=stem, paper_mm=paper, pages=pages,
                 warnings=[f'{sum(p.get("clamped", False) for p in patches)}개 패치 0/100 고정'] if any(p.get('clamped') for p in patches) else [])
+
+
+def input_errors(mode, **values):
+    """Return field-keyed errors using the same scalar validators as layout().
+
+    Keys use argument names, with .index for CMYK and paper components.
+    Cross-field/layout errors remain the responsibility of layout().
+    """
+    errors = {}
+    def check(key, validator, *args):
+        try:
+            validator(*args)
+        except ValueError as exc:
+            errors[key] = str(exc)
+    for key in (('cmyk',) if mode == 'grid' else ('start', 'end')):
+        for i, value in enumerate(values[key]):
+            check(f'{key}.{i}', integer, value, 'CMYK'[i], 0, 100)
+    for i, value in enumerate(values['paper']):
+        check(f'paper.{i}', number, value, 'paper')
+    for key in ('margin', 'gap'):
+        check(key, number, values[key], key)
+    if values['patch_size'] is not None:
+        check('patch_size', number, values['patch_size'], 'patch-size', 5)
+    for key in (('step', 'cols', 'rows') if mode == 'grid' else ('count', 'cols')):
+        if key == 'cols' and mode == 'ramp' and values[key] == 'auto':
+            continue
+        check(key, integer, values[key], key, 2 if key == 'count' else 1)
+    return errors
+
+
+def output_names(document):
+    """PDF names before filesystem collision handling."""
+    count = len(document['pages'])
+    return [document['stem'] + (f'_{i+1:02}' if count > 1 else '') + '.pdf' for i in range(count)]
+
+
+def page_header(document, page):
+    return (f"{document['settings']['mode']} {document['stem']} | "
+            f"{page['number']}/{len(document['pages'])} | "
+            f"{page['patches'][0]['id']} - {page['patches'][-1]['id']}")

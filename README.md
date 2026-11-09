@@ -46,6 +46,8 @@ PDF마다 같은 이름의 JSON을 저장하고 기존 이름과 충돌하면 �
 빌드한 운영체제용 실행 파일이 `dist/`에 생성됩니다. Windows 배포 파일은 Windows에서 빌드해야 합니다.
 
 엔진의 `layout()`은 PDF를 쓰지 않고 장 목록, 패치 ID·정수 CMYK·라벨·mm 사각형을 반환합니다.
+`input_errors(mode, **입력)`은 기존 검사 규칙으로 칸별 오류 사전을 반환합니다(예: `cmyk.0`, `paper.0`, `cols`). 여러 칸에 걸친 레이아웃 오류는 `layout()`이 보고합니다.
+`output_names(document)`는 충돌 처리 전 PDF 이름 목록을, `page_header(document, page)`는 기존 장 헤더 문구를 반환합니다.
 좌표 원점은 용지 왼쪽 아래입니다. `engine.pdf.export()`는 이 데이터를 출력하고 즉시 역검사합니다.
 `verify`는 이 도구가 생성한 PDF와 매니페스트 쌍의 저장값을 검증합니다.
 
@@ -55,11 +57,11 @@ PDF마다 같은 이름의 JSON을 저장하고 기존 이름과 충돌하면 �
 .venv/bin/python -m color_patch_maker.gui
 ```
 
-현재 화면은 레이아웃·탭 전환·레이아웃 접기만 제공합니다. 계산과 출력 연결 상태는 진행상황 문서를 참조하세요.
+화면에서 입력 검사, 엔진 기반 미리보기, 장 넘김, 요약·파일명 표시와 패치 선택을 사용할 수 있습니다. PDF 만들기와 찾기는 다음 출력 연결 단계까지 비활성입니다.
 
 화면 없는 GUI 검사 및 캡처:
 
 ```sh
-QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/test_gui.py -q
+QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/test_gui.py tests/test_gui_connect.py -q
 QT_QPA_PLATFORM=offscreen .venv/bin/python scripts/capture_gui.py
 ```
