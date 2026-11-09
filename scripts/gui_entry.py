@@ -3,9 +3,10 @@ import os
 import sys
 from PySide6.QtCore import QTimer, QSettings
 from PySide6.QtWidgets import QApplication
-from color_patch_maker.gui.window import MainWindow
+from color_patch_maker.gui.window import MainWindow, app_icon
 
 app = QApplication(sys.argv)
+app.setWindowIcon(app_icon())
 # Packaging checks use a temporary settings directory, never user settings.
 smoke_settings = os.environ.get('CPM_OFFSCREEN_SMOKE_SETTINGS')
 if smoke_settings and os.environ.get('QT_QPA_PLATFORM') == 'offscreen':

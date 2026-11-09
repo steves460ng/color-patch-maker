@@ -10,5 +10,7 @@ dependencies = ["reportlab==4.4.4", "pikepdf==10.0.2", "PySide6==6.8.3"]
 cpm = "color_patch_maker.cli:main"
 [tool.setuptools.packages.find]
 include = ["color_patch_maker*"]
+[tool.setuptools.package-data]
+"color_patch_maker.gui" = ["resources/*.ico"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
