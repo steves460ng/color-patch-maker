@@ -1,10 +1,19 @@
 """Main window composition and input/preview controller."""
+from pathlib import Path
 from PySide6.QtCore import QSettings
+from PySide6.QtGui import QIcon
 from .settings import restore, save
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from .sidebar import Sidebar, named
 from .preview import Preview
 from .controller import Controller
+
+ICON_PATH = Path(__file__).with_name('resources') / 'app.ico'
+
+
+def app_icon():
+    """Application icon shared by the window, taskbar and the built executable."""
+    return QIcon(str(ICON_PATH))
 
 
 class MainWindow(QMainWindow):
@@ -12,6 +21,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setObjectName('main_window')
         self.setWindowTitle('Color Patch Maker')
+        self.setWindowIcon(app_icon())
         self.setMinimumSize(1024, 720)
         self.resize(1200, 800)
         central = QWidget()

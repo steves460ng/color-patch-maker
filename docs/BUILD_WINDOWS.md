@@ -65,6 +65,7 @@ C:\work\color-patch-maker\dist\ColorPatchMaker\ColorPatchMaker.exe
 - GUI: `dist\ColorPatchMaker\ColorPatchMaker.exe` — `dist\ColorPatchMaker` 폴더 전체를 옮깁니다.
 - 각각의 `_internal` 폴더를 포함해야 합니다. EXE만 복사하거나 두 `_internal`을 합치지 마세요.
 - ReportLab 데이터(글꼴 포함), pikepdf 네이티브 라이브러리는 PyInstaller 수집 설정/훅으로 포함합니다. GUI는 Qt 훅과 플랫폼 플러그인 수집을 사용하며 Windows 빌드는 `qwindows.dll` 포함 여부를 확인합니다.
+- 아이콘: `color_patch_maker\gui\resources\app.ico`(16~256px 7개 크기)를 두 EXE 파일 아이콘과 GUI 창·작업 표시줄 아이콘에 씁니다. 빌드 스크립트는 빌드 전에 아이콘 파일을, 빌드 후에 GUI 폴더 안의 아이콘 포함 여부를 확인합니다. 아이콘을 바꿀 때는 같은 경로의 파일만 교체하고 다시 빌드합니다.
 - `pefile`, `pywin32-ctypes`는 Windows PyInstaller의 빌드 의존성으로 버전을 고정했습니다. 앱 런타임 의존성 추가는 없습니다.
 
 ## 4. 빌드 후 CLI 확인
@@ -99,6 +100,7 @@ Start-Process .\dist\ColorPatchMaker\ColorPatchMaker.exe
 | 빌드 완료, 두 실행 파일과 내부 파일 존재 | | |
 | CLI 기본 격자·보간·분할·역검사·소수 거부 | | |
 | GUI 창 열림, 별도 콘솔 창 없음 | | |
+| 아이콘: 탐색기의 두 EXE, GUI 창 제목 표시줄, 작업 표시줄 | | |
 | 격자·보간 미리보기 및 패치 선택 | | |
 | 실제 폴더 선택 창으로 저장 폴더 선택 | | |
 | PDF 만들기, 생성 중 입력 잠금·창 응답 | | |
@@ -138,6 +140,7 @@ Start-Process .\ColorPatchMaker\ColorPatchMaker.exe
 - 테스트 실패: 실패한 테스트 이름과 traceback 전체를 보내세요. 테스트를 생략해서 빌드하지 마세요.
 - 백신/SmartScreen 차단: 이 빌드는 서명하지 않습니다. 차단 알림·파일명·보안 제품 기록을 확인해 조직 관리자에게 전달하세요. 보안 기능 전체를 끄지 마세요.
 - Qt 플랫폼 플러그인 오류: GUI `_internal\PySide6\plugins\platforms\qwindows.dll`을 포함해 폴더 전체가 복사됐는지 확인하세요. 다른 Qt 앱의 `QT_PLUGIN_PATH`/`QT_QPA_PLATFORM_PLUGIN_PATH` 환경 변수가 설정됐다면 새 PowerShell에서 해당 값의 영향을 확인하세요. 임의 DLL 다운로드 대신 원본 빌드를 다시 복사하세요.
+- 탐색기에 이전 아이콘이 보임: Windows 아이콘 캐시 때문입니다. `dist` 폴더를 다른 이름의 폴더로 복사해 확인하거나, 로그아웃 후 다시 로그인하세요. 창과 작업 표시줄 아이콘이 맞으면 빌드는 정상입니다.
 - 실행 중 DLL 오류: x64 Windows인지, 전체 폴더를 복사했는지 먼저 확인하고 오류의 DLL 이름과 화면을 보내세요.
 - 보내줄 자료: 위 확인 표, Windows 버전·화면 배율·Python 버전·빌드 커밋, 실패 단계부터 끝까지 PowerShell 출력, GUI 오류 화면, 확인 스크립트 진단 폴더의 stdout/stderr 및 관련 PDF/JSON. 경로의 사용자 이름 등 개인정보는 가려도 됩니다.
 

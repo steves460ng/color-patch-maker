@@ -165,3 +165,11 @@ def test_tab_switch_preserves_shared_geometry(window, app, size, expanded):
         assert geometry() == original
         current = window.findChild(QWidget, 'ramp_start_c' if mode else 'grid_cmyk_c')
         assert current.mapTo(s, current.rect().topLeft()) == first_position
+
+
+def test_window_icon(window):
+    from color_patch_maker.gui.window import ICON_PATH
+    assert ICON_PATH.is_file()
+    icon = window.windowIcon()
+    assert not icon.isNull()
+    assert {s.width() for s in icon.availableSizes()} >= {16, 32, 48, 256}
