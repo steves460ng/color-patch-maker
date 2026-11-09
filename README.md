@@ -1,77 +1,103 @@
-# Color Patch Maker
+<p align="center">
+  <img src="docs/assets/icon.png" width="112" alt="Color Patch Maker 아이콘">
+</p>
 
-사용자가 정한 규칙대로 CMYK 패치를 만들어 인쇄용 PDF로 출력하는 데스크톱 도구입니다. 작업자는 인쇄된 패치를 실물 견본과 비교해 가장 가까운 CMYK 값을 고릅니다.
+<h1 align="center">Color Patch Maker</h1>
 
-- **두 채널 격자:** 기준 CMYK 주변에서 두 채널을 일정 간격으로 바꾼 패치
-- **시작·끝 보간:** 두 CMYK 값 사이를 패치 수만큼 균등하게 채운 패치
-- 모든 CMYK 값은 정수이며, 한 PDF는 한 페이지입니다. 패치가 넘치면 단일 페이지 PDF 여러 개로 나눕니다.
-- 데스크톱 GUI와 명령줄(CLI)을 같은 엔진으로 제공하고, Windows 실행 파일로 배포합니다.
+<p align="center">
+  원하는 색을 찾을 때까지, 필요한 만큼만 정확하게 뽑는 CMYK 패치 차트
+</p>
 
-## 현재 상태
+<p align="center">
+  <img src="docs/ui/screens/1600x900-selected.png" width="860" alt="Color Patch Maker 화면: 왼쪽에 설정, 오른쪽에 7×7 패치 미리보기">
+</p>
 
-구현 진행 상태와 검증 결과는 [진행상황](docs/PROGRESS.md)을 참조하세요.
+인쇄한 색이 실물 견본과 다를 때, 숫자를 조금씩 바꿔 가며 다시 뽑아 보는 일은 번거롭습니다. Color Patch Maker는 원본 CMYK 값을 넣으면 그 주변 색을 규칙대로 펼친 패치 차트를 인쇄용 PDF로 만들어 줍니다. 인쇄물을 견본 옆에 놓고 가장 가까운 패치를 고르면, 라벨에 적힌 CMYK 값을 그대로 쓰면 됩니다.
 
-## 문서
+## 이렇게 씁니다
 
-- [설계 문서](docs/DESIGN.md): 기능, 화면 구성, 구조, 개발 순서, 수용 기준. 유일한 설계 기준입니다.
-- [화면 시안](docs/ui/mockup.html): 브라우저로 열면 동작하는 GUI 시안입니다.
-- [진행상황](docs/PROGRESS.md): 상태와 검증 결과를 기록합니다.
-- [작업 규칙](AGENTS.md): 개발을 시작하기 전에 읽습니다.
+1. 맞추려는 색의 CMYK 값을 입력합니다.
+2. 패치 방식과 간격을 고르고, 미리보기로 배치를 확인합니다.
+3. PDF를 만들어 인쇄합니다.
+4. 실물 견본과 비교해 가장 가까운 패치를 고릅니다.
+5. 그 값으로 확정하거나, 미리보기에서 그 패치를 눌러 새 기준으로 다시 만듭니다.
 
-## 개발 및 실행
+## 두 가지 패치 방식
 
-Python 3.12에서 저장소 루트 기준으로 실행합니다.
+### 두 채널 격자
 
-```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements-dev.txt
-.venv/bin/python -m pip install --no-deps -e .
-.venv/bin/python -m pytest -q
-.venv/bin/cpm grid --cmyk 40 70 20 0 --channels CM --step 1 --cols 7 --rows 7
-.venv/bin/cpm ramp --from 40 70 20 0 --to 30 75 30 5 --count 11
-.venv/bin/cpm verify output/C40_M70_Y20_K0_CM_s1.pdf output/C40_M70_Y20_K0_CM_s1.json
+기준 색을 가운데 두고, 두 채널을 가로·세로로 일정 간격씩 바꿉니다. 나머지 두 채널은 그대로입니다. "마젠타를 조금 빼고 시안을 조금 넣으면 맞을 것 같은데"처럼 두 채널을 같이 조정할 때 씁니다.
+
+- 채널 조합: CM, CY, CK, MY, MK, YK
+- 간격: 1%p부터 원하는 정수
+- 칸 수: 가로·세로 각각, 기본 7×7
+
+<p align="center">
+  <img src="docs/ui/screens/1600x900-grid.png" width="640" alt="두 채널 격자 미리보기">
+</p>
+
+### 시작·끝 보간
+
+시작 색과 끝 색 사이를 패치 수만큼 고르게 나눕니다. 네 채널이 함께 바뀌므로, 세 채널 이상을 같이 손봐야 할 때나 앞서 고른 두 후보 사이를 촘촘히 볼 때 씁니다.
+
+예: C40 M70 Y20 K0 → C30 M75 Y30 K5, 패치 11개
+
+| 패치 | 01 | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| C | 40 | 39 | 38 | 37 | 36 | 35 | 34 | 33 | 32 | 31 | 30 |
+| M | 70 | 71 | 71 | 72 | 72 | 73 | 73 | 74 | 74 | 75 | 75 |
+| Y | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 |
+| K | 0 | 1 | 1 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 |
+
+<p align="center">
+  <img src="docs/ui/screens/1600x900-ramp.png" width="640" alt="시작·끝 보간 미리보기">
+</p>
+
+## 인쇄 현장에 맞춘 출력
+
+- **정수 CMYK만 씁니다.** 인쇄기가 정수값만 출력하므로 모든 패치 값과 라벨이 정수입니다. 소수를 넣으면 반올림하지 않고 알려 줍니다.
+- **한 파일은 한 페이지입니다.** 페이지를 구분하지 못하는 RIP에서도 그대로 쓸 수 있습니다. 패치가 한 장에 다 들어가지 않으면 `_01`, `_02`처럼 단일 페이지 PDF 여러 개로 나눕니다.
+- **패치마다 CMYK 값을 적습니다.** 인쇄물에서 바로 읽어 쓸 수 있습니다. 기준 색과 시작·끝 패치는 따로 표시합니다.
+- **색은 벡터로 저장하고 다시 확인합니다.** 모든 패치는 DeviceCMYK 벡터로 저장되고, 만든 뒤 PDF를 다시 읽어 값과 위치가 맞는지 검사합니다.
+- **기존 파일을 덮어쓰지 않습니다.** 파일 이름에 입력값이 들어가고(예: `C40_M70_Y20_K0_CM_s1.pdf`), 같은 이름이 있으면 `_v2`를 붙입니다.
+- **0~100%를 넘는 값은 0과 100으로 맞춥니다.** 격자 끝이 범위를 벗어나면 경고를 보여주고, 같은 값이 된 패치도 그대로 출력합니다.
+
+## 화면
+
+| 영역 | 하는 일 |
+| --- | --- |
+| 방식 탭 | 두 채널 격자와 시작·끝 보간을 바꿉니다. 탭마다 입력값이 따로 남습니다. |
+| 설정 | CMYK와 간격·칸 수를 넣습니다. 잘못된 값은 칸 바로 아래에 알려 줍니다. |
+| 레이아웃 | 용지(기본 305×505mm), 여백(기본 20mm), 패치 크기(자동 또는 mm), 패치 간격을 바꿉니다. |
+| 미리보기 | 용지 비율 그대로 패치 배치를 보여주고, 여러 장이면 장을 넘겨 봅니다. |
+| 선택한 패치 | 미리보기에서 누른 패치의 값을 보여주고, 다음 작업의 기준·시작·끝으로 넣습니다. |
+| 알림·저장 | 경고와 결과를 보여주고, 저장 폴더를 골라 PDF를 만듭니다. |
+
+PDF를 만드는 동안에도 화면은 멈추지 않습니다. 끝나면 만들어진 파일 목록과 검사 결과를 보여주고, **폴더 열기**로 바로 이동할 수 있습니다. 저장 폴더와 레이아웃 설정은 다음 실행 때 그대로 돌아옵니다.
+
+## 명령줄로 쓰기
+
+반복 작업에는 같은 기능을 명령줄 프로그램 `cpm.exe`로도 쓸 수 있습니다.
+
+```powershell
+cpm.exe grid --cmyk 40 70 20 0 --channels CM --step 1 --cols 7 --rows 7 --out-dir output
+cpm.exe ramp --from 40 70 20 0 --to 30 75 30 5 --count 11 --out-dir output
+cpm.exe verify output\C40_M70_Y20_K0_CM_s1.pdf output\C40_M70_Y20_K0_CM_s1.json
 ```
 
-Windows에서는 `.venv/bin/` 대신 `.venv/Scripts/`를 사용합니다.
-공통 옵션은 `--paper W H`, `--margin`, `--gap`, `--patch-size`, `--out-dir`입니다.
-결과는 stdout JSON, 경고·오류는 stderr이며 오류 종료 코드는 2입니다.
-PDF마다 같은 이름의 JSON을 저장하고 기존 이름과 충돌하면 묶음에 `_v2` 등을 붙입니다.
+## 설치
 
-## 실행 파일 빌드
+Windows 10/11 x64용입니다. 아직 내려받을 수 있는 배포 파일은 없으며, [Windows 빌드 안내](docs/BUILD_WINDOWS.md)를 따라 실행 파일을 만듭니다. 만들어진 `ColorPatchMaker` 폴더(화면용)와 `cpm` 폴더(명령줄용)를 통째로 옮기면 Python이 없는 PC에서도 실행됩니다.
 
-Windows 준비·빌드·배포·수동 확인은 [Windows 빌드 안내](docs/BUILD_WINDOWS.md)를 따르세요. 콘솔 `cpm.exe`와 GUI `ColorPatchMaker.exe`를 각각 폴더 전체로 배포합니다.
+## 알아 두세요
 
-Linux 개발용 설정 점검(Windows EXE는 생성하지 않음):
+- 화면의 색은 참고용입니다. 색 판단은 반드시 인쇄물로 합니다.
+- PDF에 저장된 CMYK 값은 검사하지만, RIP나 인쇄기가 색을 바꾸는 경우까지 보증하지는 않습니다.
+- 라벨은 최소 6pt로 인쇄됩니다. 칸 수가 많아 이 크기를 지킬 수 없으면 패치 크기를 키우거나 칸 수를 줄이라고 알려 줍니다.
 
-```sh
-.venv/bin/python -m PyInstaller --noconfirm --clean cpm.spec
-.venv/bin/python -m PyInstaller --noconfirm --clean ColorPatchMaker.spec
-./dist/cpm/cpm --help
-QT_QPA_PLATFORM=offscreen CPM_OFFSCREEN_SMOKE_SETTINGS="$(mktemp -d)" ./dist/ColorPatchMaker/ColorPatchMaker
-```
+## 개발자용 문서
 
-마지막 명령은 임시 설정으로 GUI를 열고 500ms 뒤 정상 종료하는 패키징 검사입니다.
-
-엔진의 `layout()`은 PDF를 쓰지 않고 장 목록, 패치 ID·정수 CMYK·라벨·mm 사각형을 반환합니다.
-`input_errors(mode, **입력)`은 기존 검사 규칙으로 칸별 오류 사전을 반환합니다(예: `cmyk.0`, `paper.0`, `cols`). 여러 칸에 걸친 레이아웃 오류는 `layout()`이 보고합니다.
-`output_names(document)`는 충돌 처리 전 PDF 이름 목록을, `page_header(document, page)`는 기존 장 헤더 문구를 반환합니다.
-좌표 원점은 용지 왼쪽 아래입니다. `engine.pdf.export()`는 이 데이터를 출력하고 즉시 역검사합니다.
-`verify`는 이 도구가 생성한 PDF와 매니페스트 쌍의 저장값을 검증합니다.
-`engine.pdf.preview_paths(document, out_dir)`는 파일을 쓰지 않고 충돌을 반영한 PDF·JSON 경로 목록을 반환합니다. export()와 같은 후보 이름 규칙을 쓰지만 경로를 예약하지 않으므로 실제 생성 이름은 export() 반환값을 따르세요.
-
-## 데스크톱 화면
-
-```sh
-.venv/bin/python -m color_patch_maker.gui
-```
-
-화면에서 입력 검사, 엔진 기반 미리보기, 장 넘김, 요약·파일명 표시와 패치 선택을 사용할 수 있습니다. 저장 폴더를 선택하거나 입력한 뒤 **PDF 만들기** 버튼으로 출력합니다. 입력 오류가 없고 폴더가 존재할 때만 실행됩니다. 생성·역검사는 백그라운드에서 진행하며 그동안 입력과 창 닫기를 잠급니다. 완료 후 실제 파일 목록과 역검사 결과를 확인하고 **폴더 열기**로 이동할 수 있습니다.
-
-폴더와 공통 레이아웃은 다음 실행에 복원되며 CMYK·방식별 입력은 복원하지 않습니다. 설정은 Qt의 사용자별 설정 위치에 저장됩니다.
-
-화면 없는 GUI 검사 및 캡처:
-
-```sh
-QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/test_gui.py tests/test_gui_connect.py tests/test_gui_output.py -q
-QT_QPA_PLATFORM=offscreen .venv/bin/python scripts/capture_gui.py
-```
+- [개발 안내](docs/DEVELOPMENT.md): 소스 실행, 테스트, 엔진 구조
+- [설계 문서](docs/DESIGN.md): 기능과 화면의 기준
+- [진행상황](docs/PROGRESS.md): 개발 단계와 검증 결과
+- [작업 규칙](AGENTS.md): 기여 전에 읽어 주세요

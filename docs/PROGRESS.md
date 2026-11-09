@@ -84,6 +84,7 @@ GUI는 2-1 배치, 2-2 연결, 2-3 출력의 세 PR로 나눠 진행합니다(�
 | 2026-11-09 | Windows 배포 준비: 두 spec·빌드/확인 스크립트·안내 | Linux 두 빌드 및 CLI 4 PDF 역검사·GUI offscreen 종료 통과, 전체 414개 통과. PowerShell/Windows 미실행 | 사용자 Windows 빌드 및 Python 없는 PC 확인 |
 | 2026-11-09 | Windows 빌드 테스트 호환성 수정 | 사용자 Windows 검사 3 실패·411 통과 원인 수정. Linux 전체 415 통과(CP949·한글 경로 포함) | Windows 빌드 재실행 |
 | 2026-11-09 | 앱 아이콘 적용 | 사용자 제공 아이콘(256px)을 16~256px 7개 크기 ICO로 만들어 두 EXE·GUI 창·작업 표시줄에 적용. 빌드 스크립트에 아이콘 확인 추가. Linux 빌드·테스트 결과는 PR 참조 | Windows 재빌드 후 아이콘 확인 |
+| 2026-11-09 | README를 앱 소개 페이지로 전환 | 개발 내용은 docs/DEVELOPMENT.md로 이동, 아이콘 이미지 docs/assets/icon.png 추가. 코드 변경 없음 | Windows 재빌드 후 확인 |
 
 ### 1단계 검증 범위와 한계
 

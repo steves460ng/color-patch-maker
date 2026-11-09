@@ -7,6 +7,7 @@
 1. [docs/DESIGN.md](docs/DESIGN.md): 유일한 설계 기준
 2. [docs/ui/mockup.html](docs/ui/mockup.html): 화면 시안
 3. [docs/PROGRESS.md](docs/PROGRESS.md): 현재 상태와 다음 작업
+4. [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md): 개발 환경, 테스트, 엔진 구조
 
 ## 범위
 
@@ -25,6 +26,8 @@
 - 경고를 지우거나 검사를 약화해서 테스트를 통과시키지 않습니다.
 
 ## 작업 방식
+
+- README.md는 앱 사용자를 위한 소개 페이지입니다. 개발 방법과 엔진 설명은 docs/DEVELOPMENT.md에 둡니다.
 
 - 기준 브랜치는 `main`입니다. 작업은 새 브랜치에서 하고 PR로 올립니다. 강제 푸시하지 않습니다.
 - Python 3.12 기준이며, 의존성 버전은 고정합니다.
