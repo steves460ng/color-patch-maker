@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
     QComboBox, QPushButton, QToolButton, QTabBar, QScrollArea, QGroupBox,
-    QSizePolicy, QStackedWidget,
+    QSizePolicy, QStackedWidget, QPlainTextEdit,
 )
 
 
@@ -59,6 +59,21 @@ class StableStack(QStackedWidget):
         return hint
 
 
+class StatusText(QPlainTextEdit):
+    """Bounded result area so long output lists cannot enlarge the main window."""
+    def __init__(self):
+        super().__init__()
+        self.setReadOnly(True)
+        self.setFixedHeight(40)
+        self.setObjectName('output_status')
+
+    def setText(self, text):
+        self.setPlainText(text)
+
+    def text(self):
+        return self.toPlainText()
+
+
 class Sidebar(QWidget):
     def __init__(self):
         super().__init__()
@@ -84,7 +99,7 @@ class Sidebar(QWidget):
         body = named(QWidget(), 'settings_body')
         content = QVBoxLayout(body)
         content.setContentsMargins(10, 6, 10, 6)
-        content.setSpacing(6)
+        content.setSpacing(4)
         self.grid_panel, grid = self.group('격자 설정', 'grid_panel')
         self.cmyk(grid, '기준 CMYK (%)', 'grid_cmyk', (40, 70, 20, 0))
         channel = named(QComboBox(), 'grid_channels')
@@ -142,9 +157,17 @@ class Sidebar(QWidget):
         text = QHBoxLayout()
         text.addWidget(label('–', 'selected_id'))
         text.addWidget(label('–', 'selected_cmyk'))
+        text.setSpacing(6)
+        text.addStretch()
         selected_row.addLayout(text, 1)
-        picked_layout.addLayout(selected_row)
-        picked_layout.addWidget(label('미리보기에서 패치를 선택하세요.', 'selection_hint'))
+        self.selection_details = named(QStackedWidget(), 'selection_details')
+        self.selection_details.setFixedHeight(26)
+        self.selection_details.addWidget(label('미리보기에서 패치를 선택하세요.', 'selection_hint'))
+        details = QWidget()
+        details.setLayout(selected_row)
+        selected_row.setContentsMargins(0, 0, 0, 0)
+        self.selection_details.addWidget(details)
+        picked_layout.addWidget(self.selection_details)
         self.use_base = button('이 값을 기준으로', 'use_as_base_button')
 
         self.ramp_actions = QWidget()
@@ -159,7 +182,11 @@ class Sidebar(QWidget):
         picked_layout.addWidget(self.selection_actions)
         content.addWidget(picked)
         warnings, warnings_layout = self.group('알림', 'warnings_panel')
-        warnings_layout.addWidget(label('없음', 'warning_list'))
+        notice_stack = named(QStackedWidget(), 'notice_stack')
+        notice_stack.setFixedHeight(40)
+        notice_stack.addWidget(label('없음', 'warning_list'))
+        notice_stack.addWidget(StatusText())
+        warnings_layout.addWidget(notice_stack)
         content.addWidget(warnings)
         content.addStretch()
         self.scroll.setWidget(body)
@@ -184,11 +211,12 @@ class Sidebar(QWidget):
         folder_row.addWidget(folder, 1)
         folder_row.addWidget(button('찾기', 'browse_button'))
         foot.addLayout(folder_row)
+        foot.addWidget(ErrorLabel('output_folder_error'))
         foot.addWidget(label('–', 'filename_preview'))
-        foot.addWidget(button('PDF 만들기', 'make_pdf_button'))
-        status = label('', 'output_status')
-        status.setMinimumHeight(18)
-        foot.addWidget(status)
+        output_actions = QHBoxLayout()
+        output_actions.addWidget(button('PDF 만들기', 'make_pdf_button'), 1)
+        output_actions.addWidget(button('폴더 열기', 'open_folder_button'), 1)
+        foot.addLayout(output_actions)
         outer.addWidget(footer)
         self.tabs.currentChanged.connect(self.set_mode)
         self.set_mode(0)
@@ -198,8 +226,8 @@ class Sidebar(QWidget):
         group = named(QGroupBox(title), name)
         group.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         box = QVBoxLayout(group)
-        box.setContentsMargins(8, 8, 8, 6)
-        box.setSpacing(3)
+        box.setContentsMargins(8, 6, 8, 4)
+        box.setSpacing(2)
         return group, box
 
     def row(self, parent, specs):
@@ -211,7 +239,7 @@ class Sidebar(QWidget):
             field.setAlignment(Qt.AlignmentFlag.AlignTop)
             widget = named(QLineEdit(value), name) if isinstance(value, str) else value
             widget.setMinimumWidth(0)
-            widget.setFixedHeight(26)
+            widget.setFixedHeight(24)
             widget.setAccessibleName(title)
             caption = QLabel(title)
             caption.setBuddy(widget)

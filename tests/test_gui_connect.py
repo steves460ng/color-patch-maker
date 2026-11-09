@@ -129,7 +129,7 @@ def test_tab_memory_and_shared_paper(window,app):
     assert widget(window,'paper_info').text()=='400×505mm · DeviceCMYK'
     window.sidebar.tabs.setCurrentIndex(1)
     assert widget(window,'ramp_start_c').text()=='45'
-    assert not widget(window,'make_pdf_button').isEnabled() and not widget(window,'browse_button').isEnabled()
+    assert not widget(window,'make_pdf_button').isEnabled() and widget(window,'browse_button').isEnabled()
 
 
 def test_engine_has_no_qt_imports():

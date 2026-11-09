@@ -54,14 +54,30 @@ def verify(pdf_path, manifest_path):
     return True
 
 
+def candidate_paths(document, out_dir, version):
+    """One bundle's base paths; shared by preview and exclusive reservation."""
+    base = document['stem'] + (f'_v{version}' if version > 1 else '')
+    count = len(document['pages'])
+    return [Path(out_dir)/(base + (f'_{i+1:02}' if count>1 else '')) for i in range(count)]
+
+
+def preview_paths(document, out_dir):
+    """Predict all PDF/JSON paths without writing; export rechecks atomically."""
+    version = 1
+    while True:
+        paths = [p.with_suffix(ext) for p in candidate_paths(document,out_dir,version) for ext in ('.pdf','.json')]
+        if not any(p.exists() or p.is_symlink() for p in paths):
+            return [str(p) for p in paths]
+        version += 1
+
+
 def export(document, out_dir):
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     pages = document['pages']
     version = 1
     while True:
-        base = document['stem'] + (f'_v{version}' if version > 1 else '')
-        paths = [out_dir / (base + (f'_{i+1:02}' if len(pages)>1 else '')) for i in range(len(pages))]
+        paths = candidate_paths(document, out_dir, version)
         reserved = []
         try:
             for path in paths:
