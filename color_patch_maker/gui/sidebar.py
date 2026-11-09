@@ -1,4 +1,5 @@
 """Settings widgets with stable names for future controller connections."""
+from .settings import DEFAULTS
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
@@ -140,9 +141,23 @@ class Sidebar(QWidget):
         self.layout_fields = named(QWidget(), 'layout_fields')
         fields = QVBoxLayout(self.layout_fields)
         fields.setContentsMargins(0, 0, 0, 0)
-        self.row(fields, [('용지 가로 mm', 'layout_width', '305'), ('용지 세로 mm', 'layout_height', '505')])
-        self.row(fields, [('여백 mm (사방)', 'layout_margin', '20'), ('패치 간격 mm', 'layout_gap', '3')])
-        self.row(fields, [('패치 크기 mm', 'layout_patch_size', 'auto')])
+        templates = named(QComboBox(), 'layout_template')
+        fields.addWidget(templates)
+        self.focus_widgets.append(templates)
+        actions = QHBoxLayout()
+        for title, name in [('템플릿 저장', 'save_template_button'), ('템플릿 삭제', 'delete_template_button')]:
+            action = button(title, name)
+            action.setEnabled(True)
+            actions.addWidget(action)
+            self.focus_widgets.append(action)
+        fields.addLayout(actions)
+        reset = button('기본값으로 되돌리기', 'reset_layout_button')
+        reset.setEnabled(True)
+        fields.addWidget(reset)
+        self.focus_widgets.append(reset)
+        self.row(fields, [('용지 가로 mm', 'layout_width', DEFAULTS['layout_width']), ('용지 세로 mm', 'layout_height', DEFAULTS['layout_height'])])
+        self.row(fields, [('여백 mm (사방)', 'layout_margin', DEFAULTS['layout_margin']), ('패치 간격 mm', 'layout_gap', DEFAULTS['layout_gap'])])
+        self.row(fields, [('패치 크기 mm', 'layout_patch_size', DEFAULTS['layout_patch_size'])])
         layout_outer.addWidget(self.layout_fields)
         self.layout_fields.hide()
         self.layout_toggle.toggled.connect(self.toggle_layout)

@@ -27,10 +27,11 @@ Windows에서는 `.venv/bin/` 대신 `.venv/Scripts/`를 사용합니다.
 .venv/bin/cpm verify output/C40_M70_Y20_K0_CM_s1.pdf output/C40_M70_Y20_K0_CM_s1.json
 ```
 
+- 기본 제공 템플릿: `--template 기본|카드|default|card`. 명시한 레이아웃 옵션이 템플릿 값보다 우선합니다. 사용자 템플릿은 GUI에서만 사용합니다.
 - 공통 옵션: `--paper W H`, `--margin`, `--gap`, `--patch-size`, `--out-dir`.
 - 결과는 표준 출력 JSON, 경고·오류는 표준 오류로 나갑니다. 오류 종료 코드는 2입니다.
 - PDF마다 같은 이름의 JSON 매니페스트를 저장하고, 기존 이름과 충돌하면 묶음 전체에 `_v2` 등을 붙입니다.
-- GUI 설정(저장 폴더, 공통 레이아웃)은 Qt의 사용자별 설정 위치에 저장됩니다. CMYK와 방식별 입력은 저장하지 않습니다.
+- GUI 설정(저장 폴더, 공통 레이아웃, 사용자 템플릿)은 Qt의 사용자별 설정 위치에 저장됩니다. CMYK와 방식별 입력은 저장하지 않습니다.
 
 ## 엔진
 
@@ -38,6 +39,9 @@ Windows에서는 `.venv/bin/` 대신 `.venv/Scripts/`를 사용합니다.
 
 | 함수 | 역할 |
 | --- | --- |
+| `template_names()` | 기본 제공 이름 목록(기본, 카드)을 반환합니다. |
+| `template_values(name)` | 기본 제공 레이아웃 사본을 반환합니다. default/card 별칭도 받으며 값은 engine/templates.py 한 곳에 정의합니다. |
+| `validate_template(values)` | 색·방식 입력 없이 기존 layout()의 1×1 검사로 레이아웃을 검증하고 정규화합니다. 실제 입력의 라벨·칸 수 제약은 layout()이 별도로 검사합니다. |
 | `layout(mode, **입력)` | PDF를 쓰지 않고 장 목록과 패치 ID·정수 CMYK·라벨·mm 사각형을 반환합니다. 좌표 원점은 용지 왼쪽 아래입니다. |
 | `input_errors(mode, **입력)` | 기존 검사 규칙으로 칸별 오류를 반환합니다(예: `cmyk.0`, `paper.0`, `cols`). 여러 칸에 걸친 레이아웃 오류는 `layout()`이 보고합니다. |
 | `output_names(document)` | 충돌 처리 전 PDF 이름 목록을 반환합니다. |
@@ -71,3 +75,5 @@ QT_QPA_PLATFORM=offscreen CPM_OFFSCREEN_SMOKE_SETTINGS="$(mktemp -d)" ./dist/Col
 ## 아이콘
 
 `color_patch_maker/gui/resources/app.ico`(16~256px)를 두 실행 파일과 GUI 창에 씁니다. README에 쓰는 이미지는 `docs/assets/icon.png`입니다. 아이콘을 바꿀 때는 두 파일을 함께 교체합니다.
+
+기본 제공 이름·별칭과 상태 표시용 "사용자 설정"은 사용자 템플릿 이름으로 쓸 수 없습니다. 사용자 템플릿은 QSettings의 `layout_templates` JSON 사전에 레이아웃 키만 저장합니다. 손상된 항목은 개별적으로 건너뛰고 알립니다. GUI는 숫자 값이 같은 템플릿을 표시하며 같은 값을 가진 이름이 여럿이면 현재 선택을 우선하고, 그 다음 기본 제공·저장 순서로 고릅니다.
