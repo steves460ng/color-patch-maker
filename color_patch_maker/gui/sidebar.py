@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
     QComboBox, QPushButton, QToolButton, QTabBar, QScrollArea, QGroupBox,
-    QSizePolicy,
+    QSizePolicy, QStackedWidget,
 )
 
 
@@ -38,6 +38,19 @@ class ErrorLabel(QLabel):
         self.setVisible(bool(text))
 
 
+class StableStack(QStackedWidget):
+    """Use all pages' wrapped heights, not just the active page's height."""
+    def heightForWidth(self, width):
+        return max(self.widget(i).heightForWidth(width) if self.widget(i).hasHeightForWidth()
+                   else self.widget(i).sizeHint().height() for i in range(self.count()))
+
+    def sizeHint(self):
+        hint = super().sizeHint()
+        if self.count() and self.width() > 0:
+            hint.setHeight(max(hint.height(), self.heightForWidth(self.width())))
+        return hint
+
+
 class Sidebar(QWidget):
     def __init__(self):
         super().__init__()
@@ -70,13 +83,23 @@ class Sidebar(QWidget):
         channel.addItems(['CM', 'CY', 'CK', 'MY', 'MK', 'YK'])
         self.row(grid, [('변형 채널', 'grid_channels', channel), ('간격 (%p)', 'grid_step', '1')])
         self.row(grid, [('가로 칸 수', 'grid_cols', '7'), ('세로 칸 수', 'grid_rows', '7')])
-        content.addWidget(self.grid_panel)
+        grid.addStretch()
         self.ramp_panel, ramp = self.group('보간 설정', 'ramp_panel')
         self.cmyk(ramp, '시작 CMYK (%)', 'ramp_start', (40, 70, 20, 0))
         self.cmyk(ramp, '끝 CMYK (%)', 'ramp_end', (30, 75, 30, 5))
         self.row(ramp, [('패치 수 (시작·끝 포함)', 'ramp_count', '11'), ('가로 칸 수', 'ramp_cols', 'auto')])
         ramp.addWidget(label('가로 칸 수 auto: 자동 크기면 7칸, 패치 크기를 정하면 한 줄 최대 칸 수', 'ramp_auto_hint'))
-        content.addWidget(self.ramp_panel)
+        ramp.addStretch()
+        self.mode_panels = named(StableStack(), 'mode_panels')
+        self.mode_panels.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+        for panel in (self.grid_panel, self.ramp_panel):
+            page = QWidget()
+            page_layout = QVBoxLayout(page)
+            page_layout.setContentsMargins(0, 0, 0, 0)
+            panel.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+            page_layout.addWidget(panel)
+            self.mode_panels.addWidget(page)
+        content.addWidget(self.mode_panels)
 
         layout_box = named(QWidget(), 'layout_section')
         layout_outer = QVBoxLayout(layout_box)
@@ -115,13 +138,17 @@ class Sidebar(QWidget):
         picked_layout.addLayout(selected_row)
         picked_layout.addWidget(label('미리보기에서 패치를 선택하세요.', 'selection_hint'))
         self.use_base = button('이 값을 기준으로', 'use_as_base_button')
-        picked_layout.addWidget(self.use_base)
+
         self.ramp_actions = QWidget()
         actions = QHBoxLayout(self.ramp_actions)
         actions.setContentsMargins(0, 0, 0, 0)
         actions.addWidget(button('시작으로', 'use_as_start_button'))
         actions.addWidget(button('끝으로', 'use_as_end_button'))
-        picked_layout.addWidget(self.ramp_actions)
+        self.selection_actions = named(QStackedWidget(), 'selection_actions')
+        self.selection_actions.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+        self.selection_actions.addWidget(self.use_base)
+        self.selection_actions.addWidget(self.ramp_actions)
+        picked_layout.addWidget(self.selection_actions)
         content.addWidget(picked)
         warnings, warnings_layout = self.group('알림', 'warnings_panel')
         warnings_layout.addWidget(label('없음', 'warning_list'))
@@ -192,10 +219,8 @@ class Sidebar(QWidget):
         self.row(parent, [(c, f'{prefix}_{c.lower()}', str(v)) for c, v in zip('CMYK', values)])
 
     def set_mode(self, index):
-        self.grid_panel.setVisible(index == 0)
-        self.ramp_panel.setVisible(index == 1)
-        self.use_base.setVisible(index == 0)
-        self.ramp_actions.setVisible(index == 1)
+        self.mode_panels.setCurrentIndex(index)
+        self.selection_actions.setCurrentIndex(index)
 
     def toggle_layout(self, expanded):
         self.layout_fields.setVisible(expanded)

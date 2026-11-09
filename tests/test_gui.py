@@ -149,3 +149,24 @@ def test_collapsed_warnings_visible_and_error_growth(window, app, mode):
     app.processEvents(); QTest.qWait(30)
     assert all(not error.isVisible() for error in errors)
     assert viewport.rect().contains(visible_rect(warnings))
+
+
+@pytest.mark.parametrize('size', [(1024,720), (1600,900), (1200,800)])
+@pytest.mark.parametrize('expanded', [False, True])
+def test_tab_switch_preserves_shared_geometry(window, app, size, expanded):
+    window.resize(*size)
+    s = window.sidebar
+    s.layout_toggle.setChecked(expanded)
+    app.processEvents(); QTest.qWait(30)
+    names = ['mode_panels', 'layout_section', 'selected_panel', 'warnings_panel', 'output_footer']
+    def geometry():
+        return [window.findChild(QWidget, name).geometry() for name in names]
+    original = geometry()
+    first = window.findChild(QWidget, 'grid_cmyk_c')
+    first_position = first.mapTo(s, first.rect().topLeft())
+    for mode in [1, 0, 1, 0]:
+        s.tabs.setCurrentIndex(mode)
+        app.processEvents(); QTest.qWait(30)
+        assert geometry() == original
+        current = window.findChild(QWidget, 'ramp_start_c' if mode else 'grid_cmyk_c')
+        assert current.mapTo(s, current.rect().topLeft()) == first_position
